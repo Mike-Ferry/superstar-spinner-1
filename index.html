@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MFO — Spin to Win</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  --red:#CC0000;
+  --red-dark:#990000;
+  --red-bright:#EE1111;
+  --black:#111111;
+  --white:#FFFFFF;
+  --off-white:#F7F7F7;
+  --gray:#777;
+  --light-gray:#E5E5E5;
+}
+
+body{
+  background:var(--white);
+  color:var(--black);
+  font-family:'Barlow',sans-serif;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:40px 16px 48px;
+  overflow-x:hidden;
+}
+
+.page{
+  width:100%;
+  max-width:480px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.header{
+  text-align:center;
+  margin-bottom:24px;
+}
+
+.brand{
+  font-family:'Barlow',sans-serif;
+  font-weight:700;
+  font-size:10px;
+  letter-spacing:5px;
+  text-transform:uppercase;
+  color:var(--red);
+  margin-bottom:10px;
+}
+
+.headline{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(60px,16vw,96px);
+  line-height:.88;
+  text-align:center;
+  color:var(--black);
+  letter-spacing:3px;
+}
+
+.headline .red{color:var(--red);}
+
+.subhead{
+  font-family:'Barlow',sans-serif;
+  font-weight:700;
+  font-size:clamp(16px,4vw,22px);
+  color:var(--gray);
+  text-align:center;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  margin-top:10px;
+}
+
+.rule{
+  width:48px;height:3px;
+  background:var(--red);
+  margin:14px auto 0;
+}
+
+.wheel-section{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  width:100%;
+  margin-top:28px;
+}
+
+.pointer{
+  width:0;height:0;
+  border-left:16px solid transparent;
+  border-right:16px solid transparent;
+  border-top:34px solid var(--red);
+  position:relative;z-index:10;
+  filter:drop-shadow(0 2px 8px rgba(204,0,0,0.55));
+  margin-bottom:-3px;
+}
+
+.wheel-wrapper{
+  position:relative;
+  width:min(400px, 90vw);
+  height:min(400px, 90vw);
+}
+
+canvas#wheelCanvas{
+  width:100%;height:100%;
+  border-radius:50%;
+  display:block;
+  box-shadow:0 8px 40px rgba(0,0,0,0.13), 0 0 0 4px var(--red), 0 0 0 7px var(--black);
+}
+
+.hub{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:56px;height:56px;
+  background:var(--white);
+  border:4px solid var(--red);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  z-index:5;
+  box-shadow:0 0 0 3px var(--black), 0 4px 16px rgba(0,0,0,0.25);
+}
+
+.hub-inner{
+  width:16px;height:16px;
+  background:var(--red);
+  border-radius:50%;
+}
+
+.spin-btn{
+  margin-top:28px;
+  background:var(--red);
+  color:var(--white);
+  border:none;
+  padding:18px 64px;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:28px;
+  letter-spacing:4px;
+  cursor:pointer;
+  border-radius:2px;
+  transition:background .15s, box-shadow .15s;
+  box-shadow:0 5px 0 var(--red-dark), 0 10px 30px rgba(204,0,0,0.2);
+  position:relative;top:0;
+}
+.spin-btn:hover{background:var(--red-bright);box-shadow:0 5px 0 var(--red-dark),0 14px 40px rgba(204,0,0,0.35);}
+.spin-btn:active{top:5px;box-shadow:0 0 0 var(--red-dark);}
+.spin-btn:disabled{background:var(--light-gray);color:#aaa;cursor:not-allowed;box-shadow:none;top:0;}
+
+/* ── WIN OVERLAY ── */
+.win-overlay{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.72);
+  z-index:100;
+  align-items:center;justify-content:center;
+  padding:24px;
+}
+
+/* Value banner — sits flush at the very top of the card */
+.win-value-banner{
+  background:#111111;
+  color:#FFD700;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:15px;
+  letter-spacing:2.5px;
+  text-transform:uppercase;
+  text-align:center;
+  padding:10px 16px;
+  margin:-36px -32px 24px -32px;
+  border-bottom:2px solid #FFD700;
+}
+.win-value-banner span{
+  color:#ffffff;
+  font-size:13px;
+  letter-spacing:1px;
+  font-family:'Barlow',sans-serif;
+  font-weight:700;
+  text-transform:uppercase;
+}
+
+.win-card{
+  background:var(--white);
+  border-top:5px solid var(--red);
+  border-radius:2px;
+  max-width:420px;width:100%;
+  padding:36px 32px 32px;
+  text-align:center;
+  animation:cardIn .45s cubic-bezier(.175,.885,.32,1.275) forwards;
+  box-shadow:0 24px 80px rgba(0,0,0,0.4);
+  position:relative;
+  overflow:hidden;
+}
+
+.card-confetti{
+  position:absolute;
+  pointer-events:none;
+  z-index:10;
+}
+
+@keyframes cardIn{
+  from{opacity:0;transform:scale(.88) translateY(24px);}
+  to{opacity:1;transform:scale(1) translateY(0);}
+}
+
+/* "JACKPOT!" */
+.win-eyebrow{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(52px,13vw,72px);
+  letter-spacing:6px;
+  text-transform:uppercase;
+  color:var(--red);
+  margin-bottom:6px;
+  font-weight:400;
+  line-height:1;
+}
+
+/* "WEST COAST SUPERSTAR TICKETS" */
+.win-headline{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(22px,5vw,30px);
+  line-height:1.1;
+  color:var(--black);
+  letter-spacing:2px;
+  margin-bottom:4px;
+  font-weight:400;
+}
+
+/* "ONLY $150 EACH" */
+.win-price{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(38px,9vw,54px);
+  line-height:1;
+  color:var(--red);
+  letter-spacing:3px;
+  margin-bottom:8px;
+  white-space:nowrap;
+}
+
+/* Strikethrough "Regular Price: $500 per ticket" */
+.win-strikethrough{
+  font-family:'Barlow',sans-serif;
+  font-size:13px;
+  color:#bbb;
+  font-weight:600;
+  letter-spacing:1px;
+  margin-bottom:14px;
+  text-decoration:line-through;
+  text-decoration-color:var(--red);
+}
+
+/* Urgency banner */
+.win-urgency{
+  background:#fff5f5;
+  border:1px solid #ffcccc;
+  border-radius:2px;
+  padding:10px 14px;
+  margin-bottom:14px;
+  font-family:'Barlow',sans-serif;
+  font-size:12px;
+  font-weight:800;
+  color:var(--red);
+  letter-spacing:.8px;
+  text-transform:uppercase;
+}
+
+.win-sub{
+  font-size:14px;
+  color:var(--gray);
+  margin-bottom:20px;
+  line-height:1.65;
+}
+
+/* CTA button */
+.cta-link{
+  display:block;
+  background:var(--red);
+  color:var(--white);
+  text-decoration:none;
+  text-align:center;
+  padding:18px 20px;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:22px;
+  letter-spacing:2px;
+  border-radius:2px;
+  transition:background .15s;
+  box-shadow:0 4px 0 var(--red-dark);
+  line-height:1.15;
+  white-space:nowrap;
+}
+.cta-link:hover{background:var(--red-bright);}
+
+.win-note{
+  font-size:11px;
+  color:#aaa;
+  margin-top:14px;
+  line-height:1.7;
+}
+
+.confetti-piece{position:fixed;pointer-events:none;z-index:200;}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="header">
+    <div class="brand">Mike Ferry Organization</div>
+    <h1 class="headline">SPIN<br>TO <span class="red">WIN.</span></h1>
+    <div class="subhead">One Spin. One Shot.</div>
+    <div class="rule"></div>
+  </div>
+
+  <div class="wheel-section">
+    <div class="pointer"></div>
+    <div class="wheel-wrapper">
+      <canvas id="wheelCanvas"></canvas>
+      <div class="hub"><div class="hub-inner"></div></div>
+    </div>
+    <button class="spin-btn" id="spinBtn" onclick="spinWheel()">SPIN NOW</button>
+  </div>
+</div>
+
+<!-- Win Overlay -->
+<div class="win-overlay" id="winOverlay">
+  <div class="win-card" id="winCard">
+    <div class="win-value-banner">UP TO $1,000 IN VALUE &nbsp;·&nbsp; <span>2 Tickets · $500 Each</span></div>
+    <div class="win-eyebrow">🎰 JACKPOT!</div>
+    <div class="win-headline">WEST COAST SUPERSTAR TICKETS</div>
+    <div class="win-price">ONLY $150 EACH</div>
+    <div class="win-strikethrough">Normally $500 per ticket</div>
+    <div class="win-urgency">⚡ This offer expires when you leave this page</div>
+    <div class="win-sub">This is your one shot at the <strong>lowest price we've ever offered</strong> for the West Coast Superstar Retreat. Don't let it slip away.</div>
+    <a class="cta-link" href="https://mikeferry.short.gy/SuperStarWest-Tickets" target="_blank">CLAIM MY $150 TICKETS NOW →</a>
+    <div class="win-note">
+      West Coast Superstar Retreat · June 2–5 · San Diego<br>
+      Room block $314/night · Deadline May 11<br>
+      <strong>Up to 2 discounted tickets per person.</strong>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SLICES ──
+// isWinner = true → wheel always lands here (DISCOUNTED TICKET)
+// Non-winners rotate through decoy labels to make the wheel look real
+const SLICES = [
+  { label: 'DISCOUNTED\nTICKET', color: '#CC0000', textColor: '#ffffff', isWinner: true,  textScale: 0.78 },
+  { label: '$100\nOFF',          color: '#111111', textColor: '#cccccc', isWinner: false, textScale: 1    },
+  { label: 'DISCOUNTED\nTICKET', color: '#ffffff', textColor: '#CC0000', isWinner: true,  textScale: 0.78 },
+  { label: '20%\nOFF',           color: '#CC0000', textColor: '#ffffff', isWinner: false, textScale: 1    },
+  { label: 'DISCOUNTED\nTICKET', color: '#111111', textColor: '#ffffff', isWinner: true,  textScale: 0.78 },
+  { label: '$150\nOFF',          color: '#ffffff', textColor: '#111111', isWinner: false, textScale: 1    },
+  { label: 'DISCOUNTED\nTICKET', color: '#CC0000', textColor: '#ffffff', isWinner: true,  textScale: 0.78 },
+  { label: '$100\nOFF',          color: '#111111', textColor: '#cccccc', isWinner: false, textScale: 1    },
+];
+
+const WINNER_INDICES = SLICES.reduce((a, s, i) => { if (s.isWinner) a.push(i); return a; }, []);
+const NUM = SLICES.length;
+const ARC = (2 * Math.PI) / NUM;
+
+const canvas = document.getElementById('wheelCanvas');
+const ctx    = canvas.getContext('2d');
+let SIZE, CX, CY, R, currentAngle = 0, spinning = false;
+
+function setupCanvas() {
+  SIZE = canvas.parentElement.offsetWidth;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width  = SIZE * dpr;
+  canvas.height = SIZE * dpr;
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.scale(dpr, dpr);
+  CX = SIZE / 2; CY = SIZE / 2; R = SIZE / 2 - 6;
+}
+
+function drawWheel(angle) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = 0; i < NUM; i++) {
+    const start = angle + i * ARC;
+    const end   = start + ARC;
+    const s     = SLICES[i];
+
+    // Fill
+    ctx.beginPath();
+    ctx.moveTo(CX, CY);
+    ctx.arc(CX, CY, R, start, end);
+    ctx.closePath();
+    ctx.fillStyle = s.color;
+    ctx.fill();
+
+    // Slice border
+    ctx.beginPath();
+    ctx.moveTo(CX, CY);
+    ctx.arc(CX, CY, R, start, end);
+    ctx.closePath();
+    ctx.strokeStyle = s.color === '#ffffff' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Text
+    ctx.save();
+    ctx.translate(CX, CY);
+    ctx.rotate(start + ARC / 2);
+
+    const lines   = s.label.split('\n');
+    const scale   = s.textScale || 1;
+    const textR   = R * 0.68;
+    const bigSz   = Math.round(R * 0.13 * scale);
+    const smSz    = Math.round(R * 0.078 * scale);
+
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+
+    ctx.font      = `900 ${bigSz}px 'Bebas Neue', sans-serif`;
+    ctx.fillStyle = s.textColor;
+    ctx.fillText(lines[0], textR, -(bigSz * 0.52));
+
+    let subColor = s.textColor;
+    if (s.textColor === '#ffffff')      subColor = 'rgba(255,255,255,0.72)';
+    else if (s.textColor === '#CC0000') subColor = 'rgba(180,0,0,0.8)';
+    else                                subColor = 'rgba(150,150,150,0.75)';
+
+    ctx.font      = `700 ${smSz}px 'Barlow', sans-serif`;
+    ctx.fillStyle = subColor;
+    ctx.fillText(lines[1] || '', textR, bigSz * 0.65);
+
+    ctx.restore();
+  }
+
+  // Outer ring
+  ctx.beginPath();
+  ctx.arc(CX, CY, R, 0, 2 * Math.PI);
+  ctx.strokeStyle = '#CC0000';
+  ctx.lineWidth = 5;
+  ctx.stroke();
+
+  // Vignette
+  const vign = ctx.createRadialGradient(CX, CY, R * 0.5, CX, CY, R);
+  vign.addColorStop(0, 'rgba(0,0,0,0)');
+  vign.addColorStop(1, 'rgba(0,0,0,0.2)');
+  ctx.beginPath();
+  ctx.arc(CX, CY, R, 0, 2 * Math.PI);
+  ctx.fillStyle = vign;
+  ctx.fill();
+}
+
+// Wait for Bebas Neue + Barlow to load before first draw
+// so text size is consistent from the very first render
+document.fonts.ready.then(() => {
+  setupCanvas();
+  drawWheel(0);
+});
+
+function spinWheel() {
+  if (spinning) return;
+  spinning = true;
+  document.getElementById('spinBtn').disabled = true;
+
+  const winIndex     = WINNER_INDICES[Math.floor(Math.random() * WINNER_INDICES.length)];
+  const pointerAngle = -Math.PI / 2;
+  const rawTarget    = pointerAngle - (winIndex * ARC + ARC / 2);
+  const normCurrent  = ((currentAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+
+  let normTarget = ((rawTarget % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+  if (normTarget <= normCurrent) normTarget += 2 * Math.PI;
+
+  const fullSpins     = 7;
+  const totalRotation = fullSpins * 2 * Math.PI + (normTarget - normCurrent);
+  const finalAngle    = normCurrent + totalRotation;
+  const duration      = 5400;
+  const startTime     = performance.now();
+
+  function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
+
+  (function tick(now) {
+    const t = Math.min((now - startTime) / duration, 1);
+    currentAngle = normCurrent + totalRotation * easeOut(t);
+    drawWheel(currentAngle);
+    if (t < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      currentAngle = finalAngle;
+      spinning = false;
+      setTimeout(showWin, 450);
+    }
+  })(performance.now());
+}
+
+function showWin() {
+  document.getElementById('winOverlay').style.display = 'flex';
+  setTimeout(launchCardConfetti, 120);
+  setTimeout(launchConfetti, 300);
+}
+
+// Card-burst confetti
+function launchCardConfetti() {
+  const card   = document.getElementById('winCard');
+  const colors = ['#CC0000','#FF4444','#111111','#ffffff','#CC0000','#ff0000'];
+  const shapes = ['50%','2px','0'];
+  for (let i = 0; i < 55; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'card-confetti';
+      const sz     = 5 + Math.random() * 9;
+      const startX = 20 + Math.random() * 60;
+      const vx     = (Math.random() - 0.5) * 180;
+      const vy     = -(80 + Math.random() * 140);
+      const rot    = Math.random() * 720 - 360;
+      const dur    = 0.7 + Math.random() * 0.6;
+      el.style.cssText = `
+        left:${startX}%;top:0px;
+        width:${sz}px;height:${sz}px;
+        background:${colors[~~(Math.random()*colors.length)]};
+        border-radius:${shapes[~~(Math.random()*shapes.length)]};
+        animation:cardBurst ${dur}s cubic-bezier(.2,.8,.4,1) forwards;
+        --vx:${vx}px;--vy:${vy}px;--rot:${rot}deg;
+      `;
+      card.appendChild(el);
+      setTimeout(() => el.remove(), dur * 1000 + 200);
+    }, i * 18);
+  }
+}
+
+// Full-screen confetti
+function launchConfetti() {
+  const colors = ['#CC0000','#FF4444','#111','#888','#fff'];
+  for (let i = 0; i < 90; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      const sz = 6 + Math.random() * 8;
+      el.style.cssText = `left:${Math.random()*100}vw;top:-12px;width:${sz}px;height:${sz}px;background:${colors[~~(Math.random()*colors.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation:fall ${1.8+Math.random()*2}s ease-in forwards;`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4500);
+    }, i * 28);
+  }
+}
+
+const s = document.createElement('style');
+s.textContent = `
+@keyframes fall{0%{opacity:1;transform:translateY(0) rotate(0deg)}100%{opacity:0;transform:translateY(105vh) rotate(720deg)}}
+@keyframes cardBurst{
+  0%  {opacity:1;transform:translate(0,0) rotate(0deg);}
+  100%{opacity:0;transform:translate(var(--vx),var(--vy)) rotate(var(--rot));}
+}`;
+document.head.appendChild(s);
+
+window.addEventListener('resize', () => { setupCanvas(); drawWheel(currentAngle); });
+</script>
+</body>
+</html>
