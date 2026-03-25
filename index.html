@@ -27,8 +27,8 @@ body{
   display:flex;
   flex-direction:column;
   align-items:center;
-  justify-content:flex-start;
-  padding:12px 16px 48px;
+  justify-content:center;
+  padding:40px 16px 48px;
   overflow-x:hidden;
 }
 
@@ -307,7 +307,7 @@ canvas#wheelCanvas{
 .logo-wrap{
   width:100%;
   text-align:center;
-  padding:20px 0 32px;
+  padding:8px 0 4px;
 }
 .site-logo{
   width:160px;
@@ -359,17 +359,17 @@ canvas#wheelCanvas{
 
 <script>
 // ── SLICES ──
-// isWinner = true → wheel always lands here (DISCOUNTED TICKET)
-// Non-winners rotate through decoy labels to make the wheel look real
+// isWinner = true → wheel always lands here (JACKPOT)
+// Non-winners show the other prize options
 const SLICES = [
-  { label: 'DISCOUNTED\nTICKET', color: '#CC0000', textColor: '#ffffff', isWinner: true,  textScale: 0.78 },
-  { label: '$100\nOFF',          color: '#111111', textColor: '#cccccc', isWinner: false, textScale: 1    },
-  { label: 'DISCOUNTED\nTICKET', color: '#ffffff', textColor: '#CC0000', isWinner: true,  textScale: 0.78 },
-  { label: '20%\nOFF',           color: '#CC0000', textColor: '#ffffff', isWinner: false, textScale: 1    },
-  { label: 'DISCOUNTED\nTICKET', color: '#111111', textColor: '#ffffff', isWinner: true,  textScale: 0.78 },
-  { label: '$150\nOFF',          color: '#ffffff', textColor: '#111111', isWinner: false, textScale: 1    },
-  { label: 'DISCOUNTED\nTICKET', color: '#CC0000', textColor: '#ffffff', isWinner: true,  textScale: 0.78 },
-  { label: '$100\nOFF',          color: '#111111', textColor: '#cccccc', isWinner: false, textScale: 1    },
+  { label: '$150\nTICKET',   color: '#CC0000', textColor: '#ffffff', isWinner: true,  textScale: 1 },
+  { label: '50%\nOFF',      color: '#111111', textColor: '#cccccc', isWinner: false, textScale: 1 },
+  { label: '$250\nTICKET',  color: '#ffffff', textColor: '#CC0000', isWinner: false, textScale: 1 },
+  { label: '75%\nOFF',      color: '#CC0000', textColor: '#ffffff', isWinner: false, textScale: 1 },
+  { label: '$100\nOFF',     color: '#111111', textColor: '#cccccc', isWinner: false, textScale: 1 },
+  { label: '$50\nOFF',      color: '#ffffff', textColor: '#111111', isWinner: false, textScale: 1 },
+  { label: '25%\nOFF',      color: '#CC0000', textColor: '#ffffff', isWinner: false, textScale: 1 },
+  { label: '$75\nOFF',      color: '#111111', textColor: '#ffffff', isWinner: false, textScale: 1 },
 ];
 
 const WINNER_INDICES = SLICES.reduce((a, s, i) => { if (s.isWinner) a.push(i); return a; }, []);
@@ -431,16 +431,22 @@ function drawWheel(angle) {
 
     ctx.font      = `900 ${bigSz}px 'Bebas Neue', sans-serif`;
     ctx.fillStyle = s.textColor;
-    ctx.fillText(lines[0], textR, -(bigSz * 0.52));
 
-    let subColor = s.textColor;
-    if (s.textColor === '#ffffff')      subColor = 'rgba(255,255,255,0.72)';
-    else if (s.textColor === '#CC0000') subColor = 'rgba(180,0,0,0.8)';
-    else                                subColor = 'rgba(150,150,150,0.75)';
+    // If single line, center it; if two lines, position them above/below center
+    if (!lines[1]) {
+      ctx.fillText(lines[0], textR, 0);
+    } else {
+      ctx.fillText(lines[0], textR, -(bigSz * 0.52));
 
-    ctx.font      = `700 ${smSz}px 'Barlow', sans-serif`;
-    ctx.fillStyle = subColor;
-    ctx.fillText(lines[1] || '', textR, bigSz * 0.65);
+      let subColor = s.textColor;
+      if (s.textColor === '#ffffff')      subColor = 'rgba(255,255,255,0.72)';
+      else if (s.textColor === '#CC0000') subColor = 'rgba(180,0,0,0.8)';
+      else                                subColor = 'rgba(150,150,150,0.75)';
+
+      ctx.font      = `700 ${smSz}px 'Barlow', sans-serif`;
+      ctx.fillStyle = subColor;
+      ctx.fillText(lines[1], textR, bigSz * 0.65);
+    }
 
     ctx.restore();
   }
