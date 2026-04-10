@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MFO — Spin to Win</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  --red:#CC0000;
+  --red-dark:#990000;
+  --red-bright:#EE1111;
+  --black:#111111;
+  --white:#FFFFFF;
+  --off-white:#F7F7F7;
+  --gray:#777;
+  --light-gray:#E5E5E5;
+}
+
+body{
+  background:var(--white);
+  color:var(--black);
+  font-family:'Barlow',sans-serif;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:40px 16px 48px;
+  overflow-x:hidden;
+}
+
+.page{
+  width:100%;
+  max-width:480px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.header{
+  text-align:center;
+  margin-bottom:24px;
+}
+
+.brand{
+  font-family:'Barlow',sans-serif;
+  font-weight:700;
+  font-size:10px;
+  letter-spacing:5px;
+  text-transform:uppercase;
+  color:var(--red);
+  margin-bottom:10px;
+}
+
+.headline{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(60px,16vw,96px);
+  line-height:.88;
+  text-align:center;
+  color:var(--black);
+  letter-spacing:3px;
+}
+
+.headline .red{color:var(--red);}
+
+.subhead{
+  font-family:'Barlow',sans-serif;
+  font-weight:700;
+  font-size:clamp(16px,4vw,22px);
+  color:var(--gray);
+  text-align:center;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  margin-top:10px;
+}
+
+.rule{
+  width:48px;height:3px;
+  background:var(--red);
+  margin:14px auto 0;
+}
+
+.wheel-section{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  width:100%;
+  margin-top:28px;
+}
+
+.pointer{
+  width:0;height:0;
+  border-left:16px solid transparent;
+  border-right:16px solid transparent;
+  border-top:34px solid var(--red);
+  position:relative;z-index:10;
+  filter:drop-shadow(0 2px 8px rgba(204,0,0,0.55));
+  margin-bottom:-3px;
+}
+
+.wheel-wrapper{
+  position:relative;
+  width:min(400px, 90vw);
+  height:min(400px, 90vw);
+}
+
+canvas#wheelCanvas{
+  width:100%;height:100%;
+  border-radius:50%;
+  display:block;
+  box-shadow:0 8px 40px rgba(0,0,0,0.13), 0 0 0 4px var(--red), 0 0 0 7px var(--black);
+}
+
+.hub{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:56px;height:56px;
+  background:var(--white);
+  border:4px solid var(--red);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  z-index:5;
+  box-shadow:0 0 0 3px var(--black), 0 4px 16px rgba(0,0,0,0.25);
+}
+
+.hub-inner{
+  width:16px;height:16px;
+  background:var(--red);
+  border-radius:50%;
+}
+
+.spin-btn{
+  margin-top:28px;
+  background:var(--light-gray);
+  color:#aaa;
+  border:none;
+  padding:18px 64px;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:28px;
+  letter-spacing:4px;
+  cursor:not-allowed;
+  border-radius:2px;
+  box-shadow:none;
+  position:relative;top:0;
+}
+
+/* ── INACTIVE OVERLAY — always visible, cannot be dismissed ── */
+.inactive-overlay{
+  display:flex;
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.78);
+  z-index:100;
+  align-items:center;justify-content:center;
+  padding:24px;
+}
+
+/* Top banner */
+.inactive-banner{
+  background:#111111;
+  color:#ffffff;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:13px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  text-align:center;
+  padding:10px 16px;
+  margin:-36px -32px 28px -32px;
+  border-bottom:2px solid var(--red);
+}
+
+.inactive-card{
+  background:var(--white);
+  border-top:5px solid var(--red);
+  border-radius:2px;
+  max-width:420px;width:100%;
+  padding:36px 32px 32px;
+  text-align:center;
+  animation:cardIn .5s cubic-bezier(.175,.885,.32,1.275) forwards;
+  box-shadow:0 24px 80px rgba(0,0,0,0.45);
+  position:relative;
+  overflow:hidden;
+}
+
+@keyframes cardIn{
+  from{opacity:0;transform:scale(.88) translateY(28px);}
+  to{opacity:1;transform:scale(1) translateY(0);}
+}
+
+/* Lock icon area */
+.inactive-icon{
+  font-size:52px;
+  line-height:1;
+  margin-bottom:10px;
+  display:block;
+}
+
+/* "THANK YOU FOR YOUR INTEREST" */
+.inactive-eyebrow{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(28px,7vw,38px);
+  letter-spacing:3px;
+  color:var(--red);
+  line-height:1.05;
+  margin-bottom:10px;
+}
+
+.inactive-rule{
+  width:40px;height:3px;
+  background:var(--red);
+  margin:0 auto 18px;
+}
+
+/* Body copy */
+.inactive-body{
+  font-family:'Barlow',sans-serif;
+  font-size:16px;
+  font-weight:600;
+  color:var(--black);
+  line-height:1.65;
+  margin-bottom:8px;
+}
+
+.inactive-sub{
+  font-family:'Barlow',sans-serif;
+  font-size:13px;
+  color:var(--gray);
+  line-height:1.6;
+  margin-bottom:26px;
+}
+
+/* Shop CTA */
+.shop-link{
+  display:block;
+  background:var(--red);
+  color:var(--white);
+  text-decoration:none;
+  text-align:center;
+  padding:18px 20px;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:22px;
+  letter-spacing:2px;
+  border-radius:2px;
+  transition:background .15s;
+  box-shadow:0 4px 0 var(--red-dark);
+  line-height:1.15;
+}
+.shop-link:hover{background:var(--red-bright);}
+
+.inactive-note{
+  font-size:11px;
+  color:#bbb;
+  margin-top:16px;
+  line-height:1.7;
+  font-family:'Barlow',sans-serif;
+}
+
+.logo-wrap{
+  width:100%;
+  text-align:center;
+  padding:8px 0 4px;
+}
+.site-logo{
+  width:160px;
+  height:auto;
+  display:inline-block;
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="logo-wrap">
+    <img src="Mike Ferry Logo.png" alt="Mike Ferry Organization" class="site-logo">
+  </div>
+  <div class="header">
+    <h1 class="headline">SPIN<br>TO <span class="red">WIN.</span></h1>
+    <div class="subhead">One Spin. One Shot.</div>
+    <div class="rule"></div>
+  </div>
+
+  <div class="wheel-section">
+    <div class="pointer"></div>
+    <div class="wheel-wrapper">
+      <canvas id="wheelCanvas"></canvas>
+      <div class="hub"><div class="hub-inner"></div></div>
+    </div>
+    <button class="spin-btn" disabled>SPIN NOW</button>
+  </div>
+</div>
+
+<!-- Inactive Overlay — permanent, cannot be closed -->
+<div class="inactive-overlay" id="inactiveOverlay">
+  <div class="inactive-card">
+    <div class="inactive-banner">The Mike Ferry Organization</div>
+    <span class="inactive-icon">🔒</span>
+    <div class="inactive-eyebrow">Thank You For<br>Your Interest!</div>
+    <div class="inactive-rule"></div>
+    <div class="inactive-body">The Spinner is not active right now.</div>
+    <div class="inactive-sub">Check back later — new deals and offers drop regularly.<br>In the meantime, explore all of our upcoming events and products below.</div>
+    <a class="shop-link" href="https://www.mikeferry.com/store" target="_blank">VIEW ALL PRODUCTS &amp; EVENTS →</a>
+    <div class="inactive-note">
+      The Mike Ferry Organization &nbsp;·&nbsp; mikeferry.com
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SLICES (display only — wheel is decorative on this page) ──
+const SLICES = [
+  { label: '$200\nTICKET',   color: '#CC0000', textColor: '#ffffff', isWinner: true,  textScale: 1 },
+  { label: '50%\nOFF',      color: '#111111', textColor: '#cccccc', isWinner: false, textScale: 1 },
+  { label: '$250\nTICKET',  color: '#ffffff', textColor: '#CC0000', isWinner: false, textScale: 1 },
+  { label: '75%\nOFF',      color: '#CC0000', textColor: '#ffffff', isWinner: false, textScale: 1 },
+  { label: '$100\nOFF',     color: '#111111', textColor: '#cccccc', isWinner: false, textScale: 1 },
+  { label: '$50\nOFF',      color: '#ffffff', textColor: '#111111', isWinner: false, textScale: 1 },
+  { label: '25%\nOFF',      color: '#CC0000', textColor: '#ffffff', isWinner: false, textScale: 1 },
+  { label: '$75\nOFF',      color: '#111111', textColor: '#ffffff', isWinner: false, textScale: 1 },
+];
+
+const NUM = SLICES.length;
+const ARC = (2 * Math.PI) / NUM;
+
+const canvas = document.getElementById('wheelCanvas');
+const ctx    = canvas.getContext('2d');
+let SIZE, CX, CY, R, currentAngle = 0;
+
+function setupCanvas() {
+  SIZE = canvas.parentElement.offsetWidth;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width  = SIZE * dpr;
+  canvas.height = SIZE * dpr;
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.scale(dpr, dpr);
+  CX = SIZE / 2; CY = SIZE / 2; R = SIZE / 2 - 6;
+}
+
+function drawWheel(angle) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = 0; i < NUM; i++) {
+    const start = angle + i * ARC;
+    const end   = start + ARC;
+    const s     = SLICES[i];
+
+    ctx.beginPath();
+    ctx.moveTo(CX, CY);
+    ctx.arc(CX, CY, R, start, end);
+    ctx.closePath();
+    ctx.fillStyle = s.color;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(CX, CY);
+    ctx.arc(CX, CY, R, start, end);
+    ctx.closePath();
+    ctx.strokeStyle = s.color === '#ffffff' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.save();
+    ctx.translate(CX, CY);
+    ctx.rotate(start + ARC / 2);
+
+    const lines   = s.label.split('\n');
+    const scale   = s.textScale || 1;
+    const textR   = R * 0.68;
+    const bigSz   = Math.round(R * 0.13 * scale);
+    const smSz    = Math.round(R * 0.078 * scale);
+
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font      = `900 ${bigSz}px 'Bebas Neue', sans-serif`;
+    ctx.fillStyle = s.textColor;
+
+    if (!lines[1]) {
+      ctx.fillText(lines[0], textR, 0);
+    } else {
+      ctx.fillText(lines[0], textR, -(bigSz * 0.52));
+
+      let subColor = s.textColor;
+      if (s.textColor === '#ffffff')      subColor = 'rgba(255,255,255,0.72)';
+      else if (s.textColor === '#CC0000') subColor = 'rgba(180,0,0,0.8)';
+      else                                subColor = 'rgba(150,150,150,0.75)';
+
+      ctx.font      = `700 ${smSz}px 'Barlow', sans-serif`;
+      ctx.fillStyle = subColor;
+      ctx.fillText(lines[1], textR, bigSz * 0.65);
+    }
+
+    ctx.restore();
+  }
+
+  // Outer ring
+  ctx.beginPath();
+  ctx.arc(CX, CY, R, 0, 2 * Math.PI);
+  ctx.strokeStyle = '#CC0000';
+  ctx.lineWidth = 5;
+  ctx.stroke();
+
+  // Vignette
+  const vign = ctx.createRadialGradient(CX, CY, R * 0.5, CX, CY, R);
+  vign.addColorStop(0, 'rgba(0,0,0,0)');
+  vign.addColorStop(1, 'rgba(0,0,0,0.2)');
+  ctx.beginPath();
+  ctx.arc(CX, CY, R, 0, 2 * Math.PI);
+  ctx.fillStyle = vign;
+  ctx.fill();
+}
+
+document.fonts.ready.then(() => {
+  setupCanvas();
+  drawWheel(0);
+});
+
+window.addEventListener('resize', () => { setupCanvas(); drawWheel(currentAngle); });
+</script>
+</body>
+</html>
