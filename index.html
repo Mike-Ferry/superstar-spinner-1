@@ -304,6 +304,97 @@ canvas#wheelCanvas{
 
 .confetti-piece{position:fixed;pointer-events:none;z-index:200;}
 
+/* ── INACTIVE OVERLAY (auto-triggers after deadline) ── */
+.inactive-overlay{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.82);
+  z-index:200;
+  align-items:center;justify-content:center;
+  padding:24px;
+}
+.inactive-banner{
+  background:#111111;
+  color:#ffffff;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:13px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  text-align:center;
+  padding:10px 16px;
+  margin:-36px -32px 28px -32px;
+  border-bottom:2px solid var(--red);
+}
+.inactive-card{
+  background:var(--white);
+  border-top:5px solid var(--red);
+  border-radius:2px;
+  max-width:420px;width:100%;
+  padding:36px 32px 32px;
+  text-align:center;
+  animation:cardIn .5s cubic-bezier(.175,.885,.32,1.275) forwards;
+  box-shadow:0 24px 80px rgba(0,0,0,0.5);
+  position:relative;
+  overflow:hidden;
+}
+.inactive-icon{
+  font-size:52px;
+  line-height:1;
+  margin-bottom:10px;
+  display:block;
+}
+.inactive-eyebrow{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(28px,7vw,38px);
+  letter-spacing:3px;
+  color:var(--red);
+  line-height:1.05;
+  margin-bottom:10px;
+}
+.inactive-rule{
+  width:40px;height:3px;
+  background:var(--red);
+  margin:0 auto 18px;
+}
+.inactive-body{
+  font-family:'Barlow',sans-serif;
+  font-size:16px;
+  font-weight:600;
+  color:var(--black);
+  line-height:1.65;
+  margin-bottom:8px;
+}
+.inactive-sub{
+  font-family:'Barlow',sans-serif;
+  font-size:13px;
+  color:var(--gray);
+  line-height:1.6;
+  margin-bottom:26px;
+}
+.shop-link{
+  display:block;
+  background:var(--red);
+  color:var(--white);
+  text-decoration:none;
+  text-align:center;
+  padding:18px 20px;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:22px;
+  letter-spacing:2px;
+  border-radius:2px;
+  transition:background .15s;
+  box-shadow:0 4px 0 var(--red-dark);
+  line-height:1.15;
+}
+.shop-link:hover{background:var(--red-bright);}
+.inactive-note{
+  font-size:11px;
+  color:#bbb;
+  margin-top:16px;
+  line-height:1.7;
+  font-family:'Barlow',sans-serif;
+}
+
 .logo-wrap{
   width:100%;
   text-align:center;
@@ -335,6 +426,20 @@ canvas#wheelCanvas{
       <div class="hub"><div class="hub-inner"></div></div>
     </div>
     <button class="spin-btn" id="spinBtn" onclick="spinWheel()">SPIN NOW</button>
+  </div>
+</div>
+
+<!-- Inactive Overlay — shown automatically after April 12 11:59 PM PST -->
+<div class="inactive-overlay" id="inactiveOverlay">
+  <div class="inactive-card">
+    <div class="inactive-banner">The Mike Ferry Organization</div>
+    <span class="inactive-icon">🔒</span>
+    <div class="inactive-eyebrow">Thank You For<br>Your Interest!</div>
+    <div class="inactive-rule"></div>
+    <div class="inactive-body">The Spinner is not active right now.</div>
+    <div class="inactive-sub">Check back later — new deals and offers drop regularly.<br>In the meantime, explore all of our upcoming events and products below.</div>
+    <a class="shop-link" href="https://www.mikeferry.com/shop/" target="_blank">VIEW ALL PRODUCTS &amp; EVENTS →</a>
+    <div class="inactive-note">The Mike Ferry Organization &nbsp;·&nbsp; mikeferry.com</div>
   </div>
 </div>
 
@@ -570,6 +675,43 @@ s.textContent = `
 document.head.appendChild(s);
 
 window.addEventListener('resize', () => { setupCanvas(); drawWheel(currentAngle); });
+
+// ── DEADLINE CHECK ──
+// Offer expires: Sunday April 12, 2026 at 11:59 PM PST (PDT = UTC-7)
+// = Monday April 13, 2026 at 06:59:00 UTC
+const DEADLINE = new Date('2026-04-13T06:59:00Z');
+
+function showInactive() {
+  // Hide win overlay if it's showing, lock spin button
+  document.getElementById('winOverlay').style.display = 'none';
+  document.getElementById('spinBtn').disabled = true;
+  document.getElementById('spinBtn').style.background = 'var(--light-gray)';
+  document.getElementById('spinBtn').style.color = '#aaa';
+  document.getElementById('spinBtn').style.boxShadow = 'none';
+  document.getElementById('spinBtn').style.cursor = 'not-allowed';
+  spinning = false;
+  // Show the inactive overlay
+  document.getElementById('inactiveOverlay').style.display = 'flex';
+}
+
+function checkDeadline() {
+  if (new Date() >= DEADLINE) {
+    showInactive();
+    return true;
+  }
+  return false;
+}
+
+// Check immediately on load
+if (!checkDeadline()) {
+  // If not expired yet, set a timer to trigger exactly when it does
+  const msUntilDeadline = DEADLINE - new Date();
+  if (msUntilDeadline > 0) {
+    setTimeout(() => {
+      showInactive();
+    }, msUntilDeadline);
+  }
+}
 </script>
 </body>
 </html>
