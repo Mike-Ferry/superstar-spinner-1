@@ -395,6 +395,22 @@ canvas#wheelCanvas{
   font-family:'Barlow',sans-serif;
 }
 
+.spin-disclaimer{
+  margin-top:16px;
+  font-family:'Barlow',sans-serif;
+  font-size:12px;
+  color:var(--gray);
+  text-align:center;
+  line-height:1.65;
+  max-width:340px;
+}
+.spin-disclaimer strong{
+  color:var(--black);
+  font-size:13px;
+  display:block;
+  margin-bottom:4px;
+}
+
 .logo-wrap{
   width:100%;
   text-align:center;
@@ -426,10 +442,11 @@ canvas#wheelCanvas{
       <div class="hub"><div class="hub-inner"></div></div>
     </div>
     <button class="spin-btn" id="spinBtn" onclick="spinWheel()">SPIN NOW</button>
+    <p class="spin-disclaimer"><strong>Exclusive offer for first-time West Coast Superstar attendees.</strong><br>Current ticket holders are not eligible for this offer, and existing purchases are non-refundable. By submitting you agree to the terms of this offer.</p>
   </div>
 </div>
 
-<!-- Inactive Overlay — shown automatically after April 12 11:59 PM PST -->
+<!-- Inactive Overlay — shown automatically before April 17 4:30 PM PDT or after April 20 12:01 AM PDT -->
 <div class="inactive-overlay" id="inactiveOverlay">
   <div class="inactive-card">
     <div class="inactive-banner">The Mike Ferry Organization</div>
@@ -459,6 +476,7 @@ canvas#wheelCanvas{
       Room block $314/night · Deadline May 11<br>
       <strong>Up to 2 discounted tickets per person.</strong>
     </div>
+    <p class="spin-disclaimer" style="margin-top:14px;"><strong>Exclusive offer for first-time West Coast Superstar attendees.</strong><br>Current ticket holders are not eligible for this offer, and existing purchases are non-refundable. By submitting you agree to the terms of this offer.</p>
   </div>
 </div>
 
@@ -676,10 +694,11 @@ document.head.appendChild(s);
 
 window.addEventListener('resize', () => { setupCanvas(); drawWheel(currentAngle); });
 
-// ── DEADLINE CHECK ──
-// Offer expires: Sunday April 12, 2026 at 11:59 PM PST (PDT = UTC-7)
-// = Monday April 13, 2026 at 06:59:00 UTC
-const DEADLINE = new Date('2026-04-13T06:59:00Z');
+// ── ACTIVE WINDOW ──
+// Opens:  Friday April 17, 2026 at 4:30 PM PDT  (PDT = UTC-7) = 23:30 UTC
+// Closes: Monday April 20, 2026 at 12:01 AM PDT              = 07:01 UTC
+const START    = new Date('2026-04-17T23:30:00Z');
+const DEADLINE = new Date('2026-04-20T07:01:00Z');
 
 function showInactive() {
   // Hide win overlay if it's showing, lock spin button
@@ -694,24 +713,41 @@ function showInactive() {
   document.getElementById('inactiveOverlay').style.display = 'flex';
 }
 
-function checkDeadline() {
-  if (new Date() >= DEADLINE) {
-    showInactive();
-    return true;
-  }
-  return false;
-}
-
-// Check immediately on load
-if (!checkDeadline()) {
-  // If not expired yet, set a timer to trigger exactly when it does
+function showActive() {
+  // Re-enable spinner when the start window is reached
+  document.getElementById('inactiveOverlay').style.display = 'none';
+  const btn = document.getElementById('spinBtn');
+  btn.disabled = false;
+  btn.style.background = '';
+  btn.style.color = '';
+  btn.style.boxShadow = '';
+  btn.style.cursor = '';
+  // Once active, set timer to lock it at the deadline
   const msUntilDeadline = DEADLINE - new Date();
   if (msUntilDeadline > 0) {
-    setTimeout(() => {
-      showInactive();
-    }, msUntilDeadline);
+    setTimeout(showInactive, msUntilDeadline);
   }
 }
+
+// Check active window on load
+(function checkActiveWindow() {
+  const now = new Date();
+  if (now < START) {
+    // Too early — show inactive and schedule unlock at start time
+    showInactive();
+    const msUntilStart = START - now;
+    setTimeout(showActive, msUntilStart);
+  } else if (now >= DEADLINE) {
+    // Past deadline — show inactive permanently
+    showInactive();
+  } else {
+    // We're inside the active window — set timer for close
+    const msUntilDeadline = DEADLINE - now;
+    if (msUntilDeadline > 0) {
+      setTimeout(showInactive, msUntilDeadline);
+    }
+  }
+})();
 </script>
 </body>
 </html>
