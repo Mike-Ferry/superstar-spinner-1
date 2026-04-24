@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MFO — Scratch to Reveal</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  --red:#CC0000;
+  --red-dark:#990000;
+  --red-bright:#EE1111;
+  --black:#111111;
+  --white:#FFFFFF;
+  --off-white:#F7F7F7;
+  --gray:#777;
+  --light-gray:#E5E5E5;
+  --gold:#FFD700;
+}
+
+body{
+  background:var(--white);
+  color:var(--black);
+  font-family:'Barlow',sans-serif;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:40px 16px 48px;
+  overflow-x:hidden;
+}
+
+.page{
+  width:100%;
+  max-width:520px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+/* ── LOGO ── */
+.logo-wrap{width:100%;text-align:center;padding:8px 0 4px;margin-bottom:4px;}
+.site-logo{width:160px;height:auto;display:inline-block;}
+
+/* ── HEADER ── */
+.header{text-align:center;margin-bottom:28px;}
+.brand{
+  font-family:'Barlow',sans-serif;
+  font-weight:700;
+  font-size:10px;
+  letter-spacing:5px;
+  text-transform:uppercase;
+  color:var(--red);
+  margin-bottom:10px;
+}
+.headline{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(56px,15vw,88px);
+  line-height:.88;
+  text-align:center;
+  color:var(--black);
+  letter-spacing:3px;
+}
+.headline .red{color:var(--red);}
+.subhead{
+  font-family:'Barlow',sans-serif;
+  font-weight:700;
+  font-size:clamp(14px,3.5vw,20px);
+  color:var(--gray);
+  text-align:center;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  margin-top:10px;
+}
+.rule{width:48px;height:3px;background:var(--red);margin:14px auto 0;}
+
+/* ── SCRATCH CARD ── */
+.scratch-card{
+  width:min(480px,97vw);
+  background:var(--white);
+  border-radius:4px;
+  overflow:hidden;
+  box-shadow:
+    0 0 0 3px var(--red),
+    0 0 0 6px var(--black),
+    0 20px 64px rgba(0,0,0,0.14);
+  position:relative;
+}
+
+/* Red top band */
+.card-header{
+  background:var(--red);
+  padding:12px 18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.card-header-left{
+  font-family:'Bebas Neue',sans-serif;
+  color:var(--white);
+  font-size:20px;
+  letter-spacing:2px;
+  line-height:1.08;
+}
+.card-header-right{
+  text-align:right;
+  font-family:'Barlow',sans-serif;
+  font-weight:900;
+  font-size:10px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--gold);
+  line-height:1.35;
+}
+
+/* Black sub-band */
+.card-subheader{
+  background:var(--black);
+  padding:7px 18px;
+  text-align:center;
+  font-family:'Barlow',sans-serif;
+  font-weight:700;
+  font-size:9px;
+  letter-spacing:4px;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.45);
+}
+
+/* Scratch zone — canvas sits on top of prize reveal */
+.scratch-zone-wrap{
+  position:relative;
+  touch-action:none;
+}
+
+/* Prize reveal (underneath the canvas) */
+.prize-reveal{
+  background:var(--off-white);
+  padding:16px 28px 20px;
+  text-align:center;
+  min-height:240px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  opacity:0; /* hidden until canvas is drawn on top */
+}
+.prize-badge{
+  display:inline-block;
+  background:var(--red);
+  color:var(--white);
+  font-family:'Barlow',sans-serif;
+  font-weight:900;
+  font-size:9px;
+  letter-spacing:3.5px;
+  text-transform:uppercase;
+  padding:5px 14px;
+  border-radius:2px;
+}
+.prize-badge:empty{display:none;}
+.prize-icon{
+  font-size:36px;
+  line-height:1;
+  display:block;
+}
+.prize-icon:empty{display:none;}
+.prize-name{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(38px,10vw,62px);
+  line-height:1.0;
+  color:var(--black);
+  letter-spacing:2px;
+  margin-top:4px;
+}
+.prize-name .red{color:var(--red);}
+.prize-partner-logo{
+  width:auto;
+  max-width:240px;
+  height:auto;
+  display:block;
+  margin:0 auto 2px;
+  opacity:0.95;
+}
+.prize-value{
+  font-family:'Barlow',sans-serif;
+  font-weight:900;
+  font-size:12px;
+  letter-spacing:2.5px;
+  color:var(--red);
+  text-transform:uppercase;
+}
+
+/* Canvas scratch layer — absolutely covers prize reveal */
+#scratchCanvas{
+  position:absolute;
+  top:0;left:0;
+  width:100%;height:100%;
+  cursor:crosshair;
+  touch-action:none;
+  display:block;
+}
+
+/* Separator line between zones */
+.card-divider{
+  height:1px;
+  background:linear-gradient(to right, transparent, rgba(0,0,0,0.08), transparent);
+}
+
+/* Card footer (lottery ticket style) */
+.card-footer{
+  background:var(--black);
+  padding:9px 18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.card-footer-text{
+  font-family:'Barlow',sans-serif;
+  font-weight:700;
+  font-size:8px;
+  letter-spacing:2.5px;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.35);
+}
+.card-footer-barcode{
+  display:flex;
+  gap:1.5px;
+  align-items:flex-end;
+  height:18px;
+}
+.bar{background:rgba(255,255,255,0.28);width:2px;}
+
+/* Scratch label below card */
+.scratch-instruction{
+  margin-top:18px;
+  font-family:'Barlow',sans-serif;
+  font-weight:700;
+  font-size:12px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:var(--gray);
+  text-align:center;
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.scratch-instruction::before,
+.scratch-instruction::after{
+  content:'';
+  flex:1;
+  height:1px;
+  background:var(--light-gray);
+}
+
+/* Progress hint */
+.scratch-progress{
+  margin-top:8px;
+  font-family:'Barlow',sans-serif;
+  font-size:11px;
+  color:var(--light-gray);
+  text-align:center;
+  transition:color .4s;
+  letter-spacing:.5px;
+}
+
+/* Disclaimer */
+.spin-disclaimer{
+  margin-top:20px;
+  font-family:'Barlow',sans-serif;
+  font-size:12px;
+  color:var(--gray);
+  text-align:center;
+  line-height:1.65;
+  max-width:340px;
+}
+.spin-disclaimer strong{
+  color:var(--black);
+  font-size:13px;
+  display:block;
+  margin-bottom:4px;
+}
+
+/* ── WIN OVERLAY ── */
+.win-overlay{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.72);
+  z-index:100;
+  align-items:center;justify-content:center;
+  padding:24px;
+}
+.win-value-banner{
+  background:#111111;
+  color:var(--gold);
+  font-family:'Bebas Neue',sans-serif;
+  font-size:15px;
+  letter-spacing:2.5px;
+  text-transform:uppercase;
+  text-align:center;
+  padding:10px 16px;
+  margin:-36px -32px 24px -32px;
+  border-bottom:2px solid var(--gold);
+}
+.win-value-banner span{
+  color:#ffffff;
+  font-size:13px;
+  letter-spacing:1px;
+  font-family:'Barlow',sans-serif;
+  font-weight:700;
+  text-transform:uppercase;
+}
+.win-card{
+  background:var(--white);
+  border-top:5px solid var(--red);
+  border-radius:2px;
+  max-width:420px;width:100%;
+  padding:36px 32px 32px;
+  text-align:center;
+  animation:cardIn .45s cubic-bezier(.175,.885,.32,1.275) forwards;
+  box-shadow:0 24px 80px rgba(0,0,0,0.4);
+  position:relative;
+  overflow:hidden;
+  max-height:90vh;
+  overflow-y:auto;
+}
+.card-confetti{position:absolute;pointer-events:none;z-index:10;}
+@keyframes cardIn{
+  from{opacity:0;transform:scale(.88) translateY(24px);}
+  to{opacity:1;transform:scale(1) translateY(0);}
+}
+.win-eyebrow{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(48px,12vw,68px);
+  letter-spacing:6px;
+  text-transform:uppercase;
+  color:var(--red);
+  margin-bottom:6px;
+  font-weight:400;
+  line-height:1;
+}
+.win-headline{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(22px,5vw,30px);
+  line-height:1.1;
+  color:var(--black);
+  letter-spacing:2px;
+  margin-bottom:4px;
+  font-weight:400;
+}
+.win-price{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(36px,9vw,52px);
+  line-height:1;
+  color:var(--red);
+  letter-spacing:3px;
+  margin-bottom:12px;
+}
+.win-strikethrough{
+  font-family:'Barlow',sans-serif;
+  font-size:13px;
+  color:#aaa;
+  text-decoration:line-through;
+  margin-top:-8px;
+  margin-bottom:14px;
+}
+.win-urgency{
+  background:#fff5f5;
+  border:1px solid #ffcccc;
+  border-radius:2px;
+  padding:10px 14px;
+  margin-bottom:14px;
+  font-family:'Barlow',sans-serif;
+  font-size:12px;
+  font-weight:800;
+  color:var(--red);
+  letter-spacing:.8px;
+  text-transform:uppercase;
+}
+.win-sub{
+  font-size:14px;
+  color:var(--gray);
+  margin-bottom:20px;
+  line-height:1.65;
+}
+.cta-link{
+  display:block;
+  background:var(--red);
+  color:var(--white);
+  text-decoration:none;
+  text-align:center;
+  padding:18px 20px;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:22px;
+  letter-spacing:2px;
+  border-radius:2px;
+  transition:background .15s;
+  box-shadow:0 4px 0 var(--red-dark);
+  line-height:1.15;
+}
+.cta-link:hover{background:var(--red-bright);}
+.win-note{
+  font-size:11px;
+  color:#aaa;
+  margin-top:14px;
+  line-height:1.7;
+}
+.confetti-piece{position:fixed;pointer-events:none;z-index:200;}
+
+/* ── INACTIVE OVERLAY ── */
+.inactive-overlay{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.82);
+  z-index:200;
+  align-items:center;justify-content:center;
+  padding:24px;
+}
+.inactive-banner{
+  background:#111111;
+  color:#ffffff;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:13px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  text-align:center;
+  padding:10px 16px;
+  margin:-36px -32px 28px -32px;
+  border-bottom:2px solid var(--red);
+}
+.inactive-card{
+  background:var(--white);
+  border-top:5px solid var(--red);
+  border-radius:2px;
+  max-width:420px;width:100%;
+  padding:36px 32px 32px;
+  text-align:center;
+  animation:cardIn .5s cubic-bezier(.175,.885,.32,1.275) forwards;
+  box-shadow:0 24px 80px rgba(0,0,0,0.5);
+  position:relative;
+  overflow:hidden;
+}
+.inactive-icon{font-size:52px;line-height:1;margin-bottom:10px;display:block;}
+.inactive-eyebrow{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(28px,7vw,38px);
+  letter-spacing:3px;
+  color:var(--red);
+  line-height:1.05;
+  margin-bottom:10px;
+}
+.inactive-rule{width:40px;height:3px;background:var(--red);margin:0 auto 18px;}
+.inactive-body{
+  font-family:'Barlow',sans-serif;
+  font-size:16px;font-weight:600;
+  color:var(--black);
+  line-height:1.65;margin-bottom:8px;
+}
+.inactive-sub{
+  font-family:'Barlow',sans-serif;
+  font-size:13px;color:var(--gray);
+  line-height:1.6;margin-bottom:26px;
+}
+.shop-link{
+  display:block;background:var(--red);color:var(--white);
+  text-decoration:none;text-align:center;padding:18px 20px;
+  font-family:'Bebas Neue',sans-serif;font-size:22px;
+  letter-spacing:2px;border-radius:2px;
+  transition:background .15s;box-shadow:0 4px 0 var(--red-dark);line-height:1.15;
+}
+.shop-link:hover{background:var(--red-bright);}
+.inactive-note{font-size:11px;color:#bbb;margin-top:16px;line-height:1.7;font-family:'Barlow',sans-serif;}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="logo-wrap">
+    <img src="3.png" alt="Mike Ferry Organization" class="site-logo">
+  </div>
+
+  <div class="header">
+    <div class="brand">Reveal Your Deal</div>
+    <h1 class="headline">SCRATCH<br>TO <span class="red">WIN.</span></h1>
+    <div class="rule"></div>
+  </div>
+
+  <!-- ════════ THE SCRATCH CARD ════════ -->
+  <div class="scratch-card">
+
+    <!-- Red top header band -->
+    <div class="card-header">
+      <div class="card-header-left">WEST COAST<br>SUPERSTAR</div>
+      <div class="card-header-right">EXCLUSIVE<br>BUNDLE<br>REVEAL</div>
+    </div>
+
+    <!-- Black sub-header -->
+    <div class="card-subheader">Scratch the silver area to reveal your deal</div>
+
+    <!-- ── SCRATCH ZONE ── -->
+    <div class="scratch-zone-wrap" id="scratchZoneWrap">
+
+      <!-- Prize underneath (revealed when scratched) -->
+      <div class="prize-reveal" id="prizeReveal">
+        <div class="prize-badge" id="prizeBadge">YOU WON!</div>
+        <div class="prize-icon" id="prizeIcon">🎉</div>
+        <!-- Logo on top, name text below -->
+        <img class="prize-partner-logo" id="prizePartnerLogo" src="" alt="West Coast Superstar Retreat" style="display:none;">
+        <div class="prize-name" id="prizeName">—</div>
+        <div class="prize-value" id="prizeValue"></div>
+      </div>
+
+      <!-- Canvas scratch layer (on top) -->
+      <canvas id="scratchCanvas"></canvas>
+
+    </div>
+    <!-- ── END SCRATCH ZONE ── -->
+
+
+  </div>
+
+  <div class="scratch-instruction">Scratch to Reveal</div>
+  <div class="scratch-progress" id="scratchProgress">Use your finger or mouse to scratch the card above</div>
+
+  <p class="spin-disclaimer">
+    <strong>Exclusive offer for first-time West Coast Superstar attendees.</strong>
+    Current ticket holders are not eligible for this offer, and existing purchases are non-refundable. By submitting you agree to the terms of this offer.
+  </p>
+
+</div><!-- /.page -->
+
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- WIN OVERLAY — appears after scratch reveal             -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="win-overlay" id="winOverlay">
+  <div class="win-card" id="winCard">
+    <div class="win-value-banner" id="winBanner">YOUR EXCLUSIVE BUNDLE &nbsp;·&nbsp; <span>West Coast Superstar</span></div>
+    <div class="win-eyebrow">🎉 YOU WON!</div>
+    <div class="win-headline" id="winHeadline">PRIZE HEADLINE</div>
+    <div class="win-price" id="winPrice">PRIZE VALUE</div>
+    <div class="win-strikethrough" id="winStrikethrough"></div>
+    <div class="win-urgency">⚡ This offer expires when you leave this page</div>
+    <div class="win-sub" id="winSub">Prize description.</div>
+    <a class="cta-link" id="winCta" href="#" target="_blank">CLAIM MY PRIZE →</a>
+    <div class="win-note" id="winNote">West Coast Superstar Retreat · June 2–5 · San Diego</div>
+    <p class="spin-disclaimer" style="margin-top:14px;">
+      <strong>Exclusive offer for first-time West Coast Superstar attendees.</strong>
+      Current ticket holders are not eligible for this offer, and existing purchases are non-refundable. By submitting you agree to the terms of this offer.
+    </p>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- INACTIVE OVERLAY — shown outside active window         -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="inactive-overlay" id="inactiveOverlay">
+  <div class="inactive-card">
+    <div class="inactive-banner">The Mike Ferry Organization</div>
+    <span class="inactive-icon">🔒</span>
+    <div class="inactive-eyebrow">Thank You For<br>Your Interest!</div>
+    <div class="inactive-rule"></div>
+    <div class="inactive-body">This scratch card is not active right now.</div>
+    <div class="inactive-sub">Check back later — new deals drop regularly.<br>In the meantime, explore all of our upcoming events below.</div>
+    <a class="shop-link" href="https://mikeferry.short.gy/SSV2026" target="_blank">GET EARLY BIRD TICKETS + 3 FREE MONTHS OF THE VAULT →</a>
+    <div class="inactive-note">The Mike Ferry Organization &nbsp;·&nbsp; mikeferry.com</div>
+  </div>
+</div>
+
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  PRIZES
+//  Configure ctaUrl for each prize before going live.
+//  Weights control probability (they don't have to sum to 100).
+// ═══════════════════════════════════════════════════════
+const PRIZES = [
+
+  // ── DEMO ── Generic prize reveal
+  {
+    badge:         '',
+    icon:          '🎉',
+    name:          'YOUR PRIZE!',
+    value:         '',
+    partnerLogo:   '',
+    logoReplacesName: false,
+    banner:        'CONGRATULATIONS',
+    headline:      'YOU WON A PRIZE!',
+    price:         'YOUR PRIZE',
+    strikethrough: '',
+    sub:           'You scratched and revealed your exclusive prize. Claim it below.',
+    cta:           'CLAIM MY PRIZE →',
+    ctaUrl:        '#',
+    note:          'West Coast Superstar Retreat · June 2–5 · San Diego',
+    weight:        100,
+  },
+
+];
+
+
+// ═══════════════════════════════════════════════════════
+//  ACTIVE WINDOW
+//  Set START and DEADLINE in UTC before going live.
+// ═══════════════════════════════════════════════════════
+const START    = new Date('2026-04-24T23:15:00Z'); // Friday 4:15 PM PDT
+const DEADLINE = new Date('2026-04-27T15:00:00Z'); // Monday 8:00 AM PDT
+
+
+// ═══════════════════════════════════════════════════════
+//  WEIGHTED RANDOM PRIZE SELECTION (runs on page load)
+// ═══════════════════════════════════════════════════════
+function pickPrize() {
+  const total = PRIZES.reduce((s, p) => s + p.weight, 0);
+  let r = Math.random() * total;
+  for (const p of PRIZES) {
+    r -= p.weight;
+    if (r <= 0) return p;
+  }
+  return PRIZES[PRIZES.length - 1];
+}
+const PRIZE = pickPrize();
+
+
+// ═══════════════════════════════════════════════════════
+//  POPULATE PRIZE REVEAL (underneath the canvas)
+// ═══════════════════════════════════════════════════════
+document.getElementById('prizeBadge').textContent = PRIZE.badge;
+document.getElementById('prizeIcon').textContent  = PRIZE.icon;
+document.getElementById('prizeValue').textContent = PRIZE.value;
+
+const nameEl = document.getElementById('prizeName');
+const logoEl = document.getElementById('prizePartnerLogo');
+
+// Show text name
+nameEl.innerHTML     = PRIZE.name.replace('\n','<br>');
+nameEl.style.display = 'block';
+// Show logo beneath name if provided
+if (PRIZE.partnerLogo) {
+  logoEl.src           = PRIZE.partnerLogo;
+  logoEl.style.display = 'block';
+} else {
+  logoEl.style.display = 'none';
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  POPULATE WIN OVERLAY
+// ═══════════════════════════════════════════════════════
+document.getElementById('winBanner').innerHTML  =
+  PRIZE.banner + ' &nbsp;·&nbsp; <span>West Coast Superstar</span>';
+document.getElementById('winHeadline').textContent = PRIZE.headline;
+document.getElementById('winPrice').textContent          = PRIZE.price;
+document.getElementById('winStrikethrough').textContent  = PRIZE.strikethrough || '';
+document.getElementById('winSub').innerHTML               = PRIZE.sub;
+document.getElementById('winCta').textContent      = PRIZE.cta;
+document.getElementById('winCta').href             = PRIZE.ctaUrl;
+document.getElementById('winNote').textContent     = PRIZE.note;
+
+
+
+
+// ═══════════════════════════════════════════════════════
+//  SCRATCH CANVAS
+// ═══════════════════════════════════════════════════════
+const canvas  = document.getElementById('scratchCanvas');
+const ctx     = canvas.getContext('2d');
+const wrap    = document.getElementById('scratchZoneWrap');
+
+let isDrawing = false;
+let revealed  = false;
+let lastX = 0, lastY = 0;
+let revealTimer = null;
+
+// ── Init / resize canvas ──────────────────────────────
+function initCanvas() {
+  const rect = wrap.getBoundingClientRect();
+  const dpr  = window.devicePixelRatio || 1;
+
+  canvas.width  = rect.width  * dpr;
+  canvas.height = rect.height * dpr;
+  canvas.style.width  = rect.width  + 'px';
+  canvas.style.height = rect.height + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  drawScratchSurface(rect.width, rect.height);
+  document.getElementById('prizeReveal').style.opacity = '1';
+}
+
+// ── Draw the metallic scratch surface ────────────────
+function drawScratchSurface(w, h) {
+  // Metallic silver base
+  const grad = ctx.createLinearGradient(0, 0, w, h);
+  grad.addColorStop(0.00, '#ADADAD');
+  grad.addColorStop(0.18, '#D6D6D6');
+  grad.addColorStop(0.36, '#BEBEBE');
+  grad.addColorStop(0.54, '#E2E2E2');
+  grad.addColorStop(0.72, '#C8C8C8');
+  grad.addColorStop(0.90, '#B8B8B8');
+  grad.addColorStop(1.00, '#ABABAB');
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  // Subtle highlight strip
+  const hGrad = ctx.createLinearGradient(0, 0, 0, h * 0.4);
+  hGrad.addColorStop(0, 'rgba(255,255,255,0.22)');
+  hGrad.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = hGrad;
+  ctx.fillRect(0, 0, w, h * 0.4);
+
+  // Fine noise texture
+  for (let i = 0; i < 1200; i++) {
+    ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.1})`;
+    ctx.fillRect(Math.random() * w, Math.random() * h, 1, 1);
+  }
+  for (let i = 0; i < 600; i++) {
+    ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.07})`;
+    ctx.fillRect(Math.random() * w, Math.random() * h, 1, 1);
+  }
+
+  // Sparkle dots
+  for (let i = 0; i < 30; i++) {
+    const sx = 8 + Math.random() * (w - 16);
+    const sy = 8 + Math.random() * (h - 16);
+    const sr = 1.5 + Math.random() * 3;
+    const sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, sr * 2.5);
+    sg.addColorStop(0, 'rgba(255,255,255,0.95)');
+    sg.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.beginPath();
+    ctx.arc(sx, sy, sr * 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = sg;
+    ctx.fill();
+  }
+
+  // "SCRATCH HERE" label in the center
+  ctx.textAlign    = 'center';
+  ctx.textBaseline = 'middle';
+
+  // Coin icon
+  ctx.font      = '32px sans-serif';
+  ctx.fillStyle = 'rgba(70,70,70,0.5)';
+  ctx.fillText('🪙', w / 2, h / 2 - 26);
+
+  // "SCRATCH HERE"
+  ctx.font      = "900 20px 'Barlow', sans-serif";
+  ctx.fillStyle = 'rgba(70,70,70,0.6)';
+  ctx.fillText('SCRATCH  HERE', w / 2, h / 2 + 4);
+
+  // Subline
+  ctx.font      = "600 11px 'Barlow', sans-serif";
+  ctx.fillStyle = 'rgba(70,70,70,0.42)';
+  ctx.fillText('Reveal your exclusive West Coast Superstar deal', w / 2, h / 2 + 24);
+}
+
+// ── Scratch erase ─────────────────────────────────────
+function scratchAt(x, y) {
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.beginPath();
+  ctx.arc(x, y, 30, 0, Math.PI * 2);
+  ctx.fill();
+  if (isDrawing && (Math.abs(x - lastX) > 0 || Math.abs(y - lastY) > 0)) {
+    ctx.lineWidth = 60;
+    ctx.lineCap   = 'round';
+    ctx.lineJoin  = 'round';
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  }
+  lastX = x;
+  lastY = y;
+}
+
+// ── Position from event ───────────────────────────────
+function getPos(e) {
+  const rect  = canvas.getBoundingClientRect();
+  const touch = e.touches ? e.touches[0] : e;
+  return {
+    x: (touch.clientX - rect.left),
+    y: (touch.clientY - rect.top),
+  };
+}
+
+// ── Sample scratch % (every Nth pixel for perf) ───────
+function getScratchPct() {
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const px = imgData.data;
+  let clear = 0, total = 0;
+  for (let i = 3; i < px.length; i += 16) {
+    total++;
+    if (px[i] < 128) clear++;
+  }
+  return (clear / total) * 100;
+}
+
+// ── Check if enough is scratched ──────────────────────
+function checkReveal() {
+  if (revealed) return;
+  const pct  = getScratchPct();
+  const prog = document.getElementById('scratchProgress');
+  if (pct >= 45) {
+    triggerReveal();
+  } else if (pct > 18) {
+    prog.textContent = 'Almost there… keep going!';
+    prog.style.color = 'var(--red)';
+  }
+}
+
+// ── Trigger reveal ────────────────────────────────────
+function triggerReveal() {
+  if (revealed) return;
+  revealed = true;
+
+  // Fade out remaining scratch surface
+  canvas.style.transition = 'opacity 0.7s ease';
+  canvas.style.opacity    = '0';
+  canvas.style.pointerEvents = 'none';
+
+  const prog = document.getElementById('scratchProgress');
+  prog.textContent = 'Your Prize!';
+  prog.style.color = 'var(--red)';
+
+  // Show win overlay after reveal fades
+  setTimeout(showWin, 950);
+}
+
+// ── Mouse events ──────────────────────────────────────
+canvas.addEventListener('mousedown', e => {
+  if (revealed) return;
+  isDrawing = true;
+  const p = getPos(e);
+  lastX = p.x; lastY = p.y;
+  scratchAt(p.x, p.y);
+});
+canvas.addEventListener('mousemove', e => {
+  if (!isDrawing || revealed) return;
+  const p = getPos(e);
+  scratchAt(p.x, p.y);
+  clearTimeout(revealTimer);
+  revealTimer = setTimeout(checkReveal, 180);
+});
+canvas.addEventListener('mouseup',    () => { isDrawing = false; checkReveal(); });
+canvas.addEventListener('mouseleave', () => { isDrawing = false; });
+
+// ── Touch events ──────────────────────────────────────
+canvas.addEventListener('touchstart', e => {
+  if (revealed) return;
+  e.preventDefault();
+  isDrawing = true;
+  const p = getPos(e);
+  lastX = p.x; lastY = p.y;
+  scratchAt(p.x, p.y);
+}, { passive: false });
+canvas.addEventListener('touchmove', e => {
+  if (!isDrawing || revealed) return;
+  e.preventDefault();
+  const p = getPos(e);
+  scratchAt(p.x, p.y);
+  clearTimeout(revealTimer);
+  revealTimer = setTimeout(checkReveal, 180);
+}, { passive: false });
+canvas.addEventListener('touchend', () => { isDrawing = false; checkReveal(); });
+
+// ── Init after fonts load ─────────────────────────────
+document.fonts.ready.then(() => {
+  initCanvas();
+});
+window.addEventListener('resize', () => { if (!revealed) initCanvas(); });
+
+
+// ═══════════════════════════════════════════════════════
+//  WIN OVERLAY + CONFETTI
+// ═══════════════════════════════════════════════════════
+function showWin() {
+  document.getElementById('winOverlay').style.display = 'flex';
+  setTimeout(launchCardConfetti, 120);
+  setTimeout(launchConfetti, 300);
+}
+
+function launchCardConfetti() {
+  const card   = document.getElementById('winCard');
+  const colors = ['#CC0000','#FF4444','#111111','#ffffff','#CC0000','#ff0000'];
+  const shapes = ['50%','2px','0'];
+  for (let i = 0; i < 55; i++) {
+    setTimeout(() => {
+      const el  = document.createElement('div');
+      el.className = 'card-confetti';
+      const sz  = 5 + Math.random() * 9;
+      const sx  = 20 + Math.random() * 60;
+      const vx  = (Math.random() - 0.5) * 180;
+      const vy  = -(80 + Math.random() * 140);
+      const rot = Math.random() * 720 - 360;
+      const dur = 0.7 + Math.random() * 0.6;
+      el.style.cssText = `
+        left:${sx}%;top:0px;
+        width:${sz}px;height:${sz}px;
+        background:${colors[~~(Math.random()*colors.length)]};
+        border-radius:${shapes[~~(Math.random()*shapes.length)]};
+        animation:cardBurst ${dur}s cubic-bezier(.2,.8,.4,1) forwards;
+        --vx:${vx}px;--vy:${vy}px;--rot:${rot}deg;
+      `;
+      card.appendChild(el);
+      setTimeout(() => el.remove(), dur * 1000 + 200);
+    }, i * 18);
+  }
+}
+
+function launchConfetti() {
+  const colors = ['#CC0000','#FF4444','#111','#888','#fff'];
+  for (let i = 0; i < 90; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      const sz = 6 + Math.random() * 8;
+      el.style.cssText = `left:${Math.random()*100}vw;top:-12px;width:${sz}px;height:${sz}px;` +
+        `background:${colors[~~(Math.random()*colors.length)]};` +
+        `border-radius:${Math.random()>.5?'50%':'2px'};` +
+        `animation:fall ${1.8+Math.random()*2}s ease-in forwards;`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4500);
+    }, i * 28);
+  }
+}
+
+const _s = document.createElement('style');
+_s.textContent = `
+@keyframes fall{0%{opacity:1;transform:translateY(0) rotate(0deg)}100%{opacity:0;transform:translateY(105vh) rotate(720deg)}}
+@keyframes cardBurst{
+  0%  {opacity:1;transform:translate(0,0) rotate(0deg);}
+  100%{opacity:0;transform:translate(var(--vx),var(--vy)) rotate(var(--rot));}
+}`;
+document.head.appendChild(_s);
+
+
+// ═══════════════════════════════════════════════════════
+//  ACTIVE WINDOW LOGIC (mirrors spinner)
+// ═══════════════════════════════════════════════════════
+function showInactive() {
+  document.getElementById('winOverlay').style.display = 'none';
+  canvas.style.pointerEvents = 'none';
+  document.getElementById('inactiveOverlay').style.display = 'flex';
+}
+
+function showActive() {
+  document.getElementById('inactiveOverlay').style.display = 'none';
+  canvas.style.pointerEvents = revealed ? 'none' : 'auto';
+  const msLeft = DEADLINE - new Date();
+  if (msLeft > 0) setTimeout(showInactive, msLeft);
+}
+
+// (function checkActiveWindow() {
+//   const now = new Date();
+//   if (now < START) {
+//     showInactive();
+//     setTimeout(showActive, START - now);
+//   } else if (now >= DEADLINE) {
+//     showInactive();
+//   } else {
+//     const msLeft = DEADLINE - now;
+//     if (msLeft > 0) setTimeout(showInactive, msLeft);
+//   }
+// })(); // ← DEMO MODE — timer disabled
+</script>
+</body>
+</html>
