@@ -463,20 +463,34 @@ canvas#wheelCanvas{
 <!-- Win Overlay -->
 <div class="win-overlay" id="winOverlay">
   <div class="win-card" id="winCard">
-    <div class="win-value-banner">UP TO $1,000 IN VALUE &nbsp;·&nbsp; <span>2 Tickets · $500 Each</span></div>
+    <div class="win-value-banner">A $525 VALUE &nbsp;·&nbsp; <span>Early Bird Ticket + The Vault + Script Book + Audio</span></div>
     <div class="win-eyebrow">🎰 JACKPOT!</div>
-    <div class="win-headline">WEST COAST SUPERSTAR TICKETS</div>
-    <div class="win-price">ONLY $200 EACH</div>
-    <div class="win-strikethrough">Normally $500 per ticket</div>
+    <div class="win-headline">YOU WON THE BUNDLE DEAL</div>
+    <div class="win-price">ONLY $400</div>
+    <div class="win-strikethrough">Normally a $525 value</div>
     <div class="win-urgency">⚡ This offer expires when you leave this page</div>
-    <div class="win-sub">That's <strong>50% off early bird pricing</strong> — this weekend, online only. Offer ends Sunday night at 11:59 PM.</div>
-    <a class="cta-link" href="https://mikeferry.short.gy/WSSR-150-Checkout" target="_blank">CLAIM MY $200 TICKETS NOW →</a>
-    <div class="win-note">
-      West Coast Superstar Retreat · June 2–5 · San Diego<br>
-      Room block $314/night · Deadline May 11<br>
-      <strong>Up to 2 discounted tickets per person.</strong>
+    <div class="win-sub" style="margin-bottom:14px;">You've unlocked everything you need to level up your business:</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px;text-align:left;">
+      <div style="display:flex;align-items:center;gap:12px;background:#fff5f5;border:1px solid #ffcccc;border-left:4px solid #CC0000;border-radius:2px;padding:10px 14px;">
+        <span style="font-size:22px;line-height:1;">🎟️</span>
+        <div><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1.5px;color:#111;">EARLY BIRD TICKET</div><div style="font-size:11px;color:#888;font-family:'Barlow',sans-serif;font-weight:600;">West Coast Superstar Retreat · June 2–5 · San Diego</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;background:#fff5f5;border:1px solid #ffcccc;border-left:4px solid #CC0000;border-radius:2px;padding:10px 14px;">
+        <span style="font-size:22px;line-height:1;">🔐</span>
+        <div><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1.5px;color:#111;">3 MONTHS FREE — THE VAULT</div><div style="font-size:11px;color:#888;font-family:'Barlow',sans-serif;font-weight:600;">Exclusive scripts, training & resources</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;background:#fff5f5;border:1px solid #ffcccc;border-left:4px solid #CC0000;border-radius:2px;padding:10px 14px;">
+        <span style="font-size:22px;line-height:1;">📖</span>
+        <div><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1.5px;color:#111;">SCRIPT BOOK</div><div style="font-size:11px;color:#888;font-family:'Barlow',sans-serif;font-weight:600;">Word-for-word scripts that close deals</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;background:#fff5f5;border:1px solid #ffcccc;border-left:4px solid #CC0000;border-radius:2px;padding:10px 14px;">
+        <span style="font-size:22px;line-height:1;">🎧</span>
+        <div><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1.5px;color:#111;">TIME MANAGEMENT AUDIO DOWNLOAD</div><div style="font-size:11px;color:#888;font-family:'Barlow',sans-serif;font-weight:600;">Master your schedule, maximize your production</div></div>
+      </div>
     </div>
-    <p class="spin-disclaimer" style="margin-top:14px;"><strong>Exclusive offer for first-time West Coast Superstar attendees.</strong><br>Current ticket holders are not eligible for this offer, and existing purchases are non-refundable. By submitting you agree to the terms of this offer.</p>
+    <a class="cta-link" href="https://mikeferry.short.gy/WSSR-150-Checkout" target="_blank">CLAIM MY $400 BUNDLE NOW →</a>
+    <div class="win-note"><strong>This bundle offer is only available on this page.</strong></div>
+    <p class="spin-disclaimer" style="margin-top:14px;line-height:2;"><strong>Exclusive offer for first-time West Coast Superstar attendees.</strong><br>Current ticket holders are not eligible for this offer, and existing purchases are non-refundable. By submitting you agree to the terms of this offer.</p>
   </div>
 </div>
 
@@ -485,9 +499,9 @@ canvas#wheelCanvas{
 // isWinner = true → wheel always lands here (JACKPOT)
 // Non-winners show the other prize options
 const SLICES = [
-  { label: '$200\nTICKET',   color: '#CC0000', textColor: '#ffffff', isWinner: true,  textScale: 1 },
+  { label: 'EARLY\nBIRD',   color: '#CC0000', textColor: '#ffffff', isWinner: false, textScale: 1 },
   { label: '50%\nOFF',      color: '#111111', textColor: '#cccccc', isWinner: false, textScale: 1 },
-  { label: '$250\nTICKET',  color: '#ffffff', textColor: '#CC0000', isWinner: false, textScale: 1 },
+  { label: 'BUNDLE\nDEAL',  color: '#ffffff', textColor: '#CC0000', isWinner: true,  textScale: 1 },
   { label: '75%\nOFF',      color: '#CC0000', textColor: '#ffffff', isWinner: false, textScale: 1 },
   { label: '$100\nOFF',     color: '#111111', textColor: '#cccccc', isWinner: false, textScale: 1 },
   { label: '$50\nOFF',      color: '#ffffff', textColor: '#111111', isWinner: false, textScale: 1 },
@@ -694,60 +708,7 @@ document.head.appendChild(s);
 
 window.addEventListener('resize', () => { setupCanvas(); drawWheel(currentAngle); });
 
-// ── ACTIVE WINDOW ──
-// Opens:  Friday April 17, 2026 at 4:30 PM PDT  (PDT = UTC-7) = 23:30 UTC
-// Closes: Monday April 20, 2026 at 12:01 AM PDT              = 07:01 UTC
-const START    = new Date('2026-04-17T23:30:00Z');
-const DEADLINE = new Date('2026-04-20T07:01:00Z');
-
-function showInactive() {
-  // Hide win overlay if it's showing, lock spin button
-  document.getElementById('winOverlay').style.display = 'none';
-  document.getElementById('spinBtn').disabled = true;
-  document.getElementById('spinBtn').style.background = 'var(--light-gray)';
-  document.getElementById('spinBtn').style.color = '#aaa';
-  document.getElementById('spinBtn').style.boxShadow = 'none';
-  document.getElementById('spinBtn').style.cursor = 'not-allowed';
-  spinning = false;
-  // Show the inactive overlay
-  document.getElementById('inactiveOverlay').style.display = 'flex';
-}
-
-function showActive() {
-  // Re-enable spinner when the start window is reached
-  document.getElementById('inactiveOverlay').style.display = 'none';
-  const btn = document.getElementById('spinBtn');
-  btn.disabled = false;
-  btn.style.background = '';
-  btn.style.color = '';
-  btn.style.boxShadow = '';
-  btn.style.cursor = '';
-  // Once active, set timer to lock it at the deadline
-  const msUntilDeadline = DEADLINE - new Date();
-  if (msUntilDeadline > 0) {
-    setTimeout(showInactive, msUntilDeadline);
-  }
-}
-
-// Check active window on load
-(function checkActiveWindow() {
-  const now = new Date();
-  if (now < START) {
-    // Too early — show inactive and schedule unlock at start time
-    showInactive();
-    const msUntilStart = START - now;
-    setTimeout(showActive, msUntilStart);
-  } else if (now >= DEADLINE) {
-    // Past deadline — show inactive permanently
-    showInactive();
-  } else {
-    // We're inside the active window — set timer for close
-    const msUntilDeadline = DEADLINE - now;
-    if (msUntilDeadline > 0) {
-      setTimeout(showInactive, msUntilDeadline);
-    }
-  }
-})();
+// ── ACTIVE WINDOW — currently unlocked (no date restrictions) ──
 </script>
 </body>
 </html>
