@@ -449,11 +449,11 @@ canvas#wheelCanvas{
   <div class="inactive-card">
     <div class="inactive-banner">The Mike Ferry Organization</div>
     <span class="inactive-icon">🔒</span>
-    <div class="inactive-eyebrow">The Weekend<br>Deal Has Ended</div>
+    <div class="inactive-eyebrow">The Spinner<br>Is Locked</div>
     <div class="inactive-rule"></div>
-    <div class="inactive-body">The 50% off offer has closed.</div>
-    <div class="inactive-sub">The weekend flash deal is no longer available — but seats for the West Coast Superstar Retreat are still open. Click below to learn more and secure your spot.</div>
-    <a class="shop-link" href="https://www.mikeferry.com/2026-west-coast-superstar-retreat-san-diego/" target="_blank">LEARN MORE ABOUT THE RETREAT →</a>
+    <div class="inactive-body">No active offer right now.</div>
+    <div class="inactive-sub">The spinner is temporarily inactive — but seats for the West Coast Superstar Retreat are still available. Secure your spot before they sell out.</div>
+    <a class="shop-link" href="https://www.mikeferry.com/2026-west-coast-superstar-retreat-san-diego/" target="_blank">GET YOUR TICKETS →</a>
     <div class="inactive-note">The Mike Ferry Organization &nbsp;·&nbsp; mikeferry.com</div>
   </div>
 </div>
@@ -556,22 +556,8 @@ function getPacificTime() {
 }
 
 function getMode() {
-  const pt  = getPacificTime();
-  const day = pt.getDay();   // 0=Sun, 1=Mon … 6=Sat
-  const h   = pt.getHours();
-  const m   = pt.getMinutes();
-
-  // Monday at/after 8:00 AM Pacific → LOCKED
-  if (day === 1 && (h > 8 || (h === 8 && m >= 0))) return 'locked';
-
-  // Saturday or Sunday (any time) → TICKET mode (weekend deal still active)
-  if (day === 0 || day === 6) return 'ticket';
-
-  // Any day at/after 4:40 PM Pacific → TICKET mode
-  if ((h > 16) || (h === 16 && m >= 40)) return 'ticket';
-
-  // Default → BUNDLE mode
-  return 'bundle';
+  // LOCKED — spinner is currently inactive
+  return 'locked';
 }
 
 // ─────────────────────────────────────────────
