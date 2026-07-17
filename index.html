@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spin to Win | Mike Ferry's Finish Strong Superstar Retreat</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  --red:#C8102E;
+  --red-dark:#9B0A1E;
+  --red-glow:rgba(200,16,46,0.35);
+  --black:#161616;
+  --dark:#1A1A1A;
+  --dark-2:#222222;
+  --white:#FFFFFF;
+  --gray:rgba(255,255,255,0.55);
+  --gold:#C79D4A;
+  --gold-dim:rgba(199,157,74,0.15);
+  --logo-w:min(240px, 52vw);
+}
+
+body{
+  font-family:'Outfit',sans-serif;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  background:var(--black);
+  overflow-x:hidden;
+  padding:20px 16px 28px;
+}
+html{overflow-y:auto;}
+
+.bg{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(200,16,46,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 80%, rgba(200,16,46,0.08) 0%, transparent 60%),
+    var(--black);
+  z-index:-2;
+}
+.bg-grid{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size:40px 40px;
+  z-index:-1;
+}
+.confetti-bg{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:-1;overflow:hidden;}
+.confetti-piece{position:absolute;opacity:0.10;animation:confetti-float linear infinite;}
+@keyframes confetti-float{
+  0%{transform:translateY(110vh) rotate(0deg);}
+  100%{transform:translateY(-10vh) rotate(720deg);}
+}
+
+.logo-fixed{display:flex;justify-content:center;align-items:center;margin-bottom:20px;}
+.logo-fixed img{width:var(--logo-w);height:auto;object-fit:contain;display:block;}
+
+.page{width:100%;max-width:480px;display:flex;flex-direction:column;align-items:center;position:relative;}
+
+@keyframes slideDown{from{opacity:0;transform:translateY(-30px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+.header{text-align:center;margin-bottom:20px;animation:slideDown .6s ease-out;}
+.badge{
+  display:inline-block;background:var(--red);border-radius:4px;padding:5px 14px;
+  font-size:11px;font-weight:800;color:var(--white);letter-spacing:3.5px;
+  text-transform:uppercase;margin-bottom:14px;
+}
+.header h1{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,8.5vw,46px);line-height:1.0;
+  color:var(--white);letter-spacing:3px;margin-bottom:12px;
+}
+.header h1 .accent{color:var(--red);}
+.header .subtitle{display:block;font-size:13px;color:var(--gray);font-weight:500;line-height:1.4;letter-spacing:.3px;margin-bottom:14px;}
+.header .event-line{
+  display:inline-block;margin-top:2px;font-size:11px;font-weight:700;color:var(--white);
+  letter-spacing:1.5px;text-transform:uppercase;background:rgba(255,255,255,0.08);padding:5px 12px;
+  border-radius:4px;border:1px solid rgba(255,255,255,0.18);
+}
+
+/* ── WHEEL ── */
+.wheel-section{
+  display:flex;flex-direction:column;align-items:center;width:100%;
+  animation:fadeUp .6s ease-out .15s both;
+  transition:filter .3s ease, opacity .3s ease;
+}
+.wheel-section.gate-locked{filter:blur(2px);opacity:.4;pointer-events:none;}
+
+.pointer{
+  width:0;height:0;
+  border-left:15px solid transparent;
+  border-right:15px solid transparent;
+  border-top:30px solid var(--white);
+  position:relative;z-index:10;
+  filter:drop-shadow(0 2px 8px rgba(255,255,255,0.5));
+  margin-bottom:-3px;
+}
+
+.wheel-wrapper{
+  position:relative;
+  width:min(340px, 84vw);
+  height:min(340px, 84vw);
+  margin-top:2px;
+}
+
+canvas#wheelCanvas{
+  width:100%;height:100%;
+  border-radius:50%;
+  display:block;
+  box-shadow:0 8px 40px rgba(0,0,0,0.5), 0 0 0 4px var(--white), 0 0 0 7px var(--black);
+}
+
+.hub{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:52px;height:52px;background:var(--black);border:4px solid var(--white);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:5;
+  box-shadow:0 0 0 3px var(--red), 0 4px 16px rgba(0,0,0,0.4);
+}
+.hub-inner{width:14px;height:14px;background:var(--red);border-radius:50%;}
+
+.spin-btn{
+  margin-top:24px;
+  background:var(--red);color:var(--white);border:none;
+  padding:16px 56px;font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;
+  cursor:pointer;border-radius:8px;transition:all .2s;
+  box-shadow:0 4px 20px var(--red-glow);
+}
+.spin-btn:hover{background:var(--red-dark);transform:translateY(-2px);box-shadow:0 8px 30px var(--red-glow);}
+.spin-btn:active{transform:translateY(0);}
+.spin-btn:disabled{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.3);cursor:not-allowed;box-shadow:none;transform:none;}
+
+.spin-instruction{
+  text-align:center;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--gray);margin-top:12px;
+}
+.spin-instruction .hot{color:var(--red);}
+
+/* ── WIN OVERLAY ── */
+.win-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;padding:24px;}
+.win-card{
+  background:var(--dark);border:2px solid var(--red);border-radius:20px;
+  max-width:400px;width:100%;padding:30px 24px 26px;text-align:center;position:relative;overflow:hidden;
+  animation:revealSlide .6s cubic-bezier(.34,1.56,.64,1);box-shadow:0 24px 80px rgba(0,0,0,0.6);
+}
+.win-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),var(--gold),var(--red));}
+.win-card > *{position:relative;z-index:1;}
+@keyframes revealSlide{from{opacity:0;transform:translateY(40px) scale(.9);}to{opacity:1;transform:translateY(0) scale(1);}}
+
+.win-logo{width:130px;height:auto;object-fit:contain;display:block;margin:0 auto 14px;}
+.win-label{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--red);margin-bottom:6px;}
+.win-headline{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--white);letter-spacing:2px;line-height:1.1;margin-bottom:12px;}
+.win-price{font-family:'Bebas Neue',sans-serif;font-size:66px;color:var(--white);line-height:1;margin-bottom:2px;letter-spacing:2px;}
+.win-price .each{font-size:20px;color:var(--gray);letter-spacing:1px;}
+.win-original{font-size:14px;color:rgba(255,255,255,0.4);margin-bottom:14px;}
+.win-original s{color:rgba(255,255,255,0.35);}
+.win-urgency{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:700;color:var(--red);letter-spacing:.5px;margin-bottom:12px;text-transform:uppercase;}
+.win-urgency .pulse-dot{width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 1.5s ease infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.7);}}
+@keyframes flashText{0%,100%{opacity:1;}50%{opacity:.35;}}
+.win-urgency .urgency-text{animation:flashText 1.5s ease infinite;}
+.win-sub{font-size:14px;color:var(--gray);line-height:1.6;margin-bottom:20px;max-width:360px;margin-left:auto;margin-right:auto;}
+.cta-btn{
+  display:block;background:var(--red);color:var(--white);font-family:'Bebas Neue',sans-serif;
+  font-size:22px;text-decoration:none;text-align:center;padding:16px 20px;border-radius:8px;
+  border:none;cursor:pointer;letter-spacing:2px;transition:all .3s ease;box-shadow:0 4px 20px var(--red-glow);
+}
+.cta-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px var(--red-glow);background:var(--red-dark);}
+.win-details{margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);}
+.win-details-line{font-size:12px;color:rgba(255,255,255,0.35);line-height:1.8;font-weight:500;}
+.win-details-line strong{color:rgba(255,255,255,0.5);font-weight:700;}
+
+.card-confetti{position:absolute;pointer-events:none;z-index:10;}
+.confetti-piece-full{position:fixed;pointer-events:none;z-index:200;}
+
+.footer{margin-top:18px;text-align:center;animation:fadeUp .6s ease-out .4s both;}
+.footer-text{font-size:10px;color:rgba(255,255,255,0.15);letter-spacing:1px;text-transform:uppercase;}
+
+/* ── INACTIVE OVERLAY ── */
+.inactive-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:200;align-items:center;justify-content:center;padding:24px;}
+.inactive-card{
+  background:var(--dark);border:2px solid var(--red);border-radius:20px;
+  max-width:400px;width:100%;padding:36px 28px 30px;text-align:center;
+  animation:revealSlide .5s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden;
+}
+.inactive-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),var(--gold),var(--red));}
+.inactive-icon{font-size:48px;line-height:1;margin-bottom:12px;display:block;}
+.inactive-eyebrow{font-family:'Bebas Neue',sans-serif;font-size:clamp(26px,6vw,34px);letter-spacing:3px;color:var(--white);line-height:1.05;margin-bottom:10px;}
+.inactive-eyebrow .accent{color:var(--red);}
+.inactive-rule{width:40px;height:3px;background:var(--red);margin:0 auto 18px;}
+.inactive-body{font-size:15px;font-weight:600;color:var(--white);line-height:1.6;margin-bottom:8px;}
+.inactive-sub{font-size:13px;color:var(--gray);line-height:1.6;margin-bottom:26px;}
+.shop-link{
+  display:block;background:var(--red);color:var(--white);text-decoration:none;text-align:center;
+  padding:16px 20px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;
+  border-radius:8px;transition:all .2s;box-shadow:0 4px 20px var(--red-glow);
+}
+.shop-link:hover{background:var(--red-dark);}
+.inactive-note{font-size:11px;color:rgba(255,255,255,0.25);margin-top:18px;line-height:1.7;}
+
+/* ── ELIGIBILITY GATE ── */
+.gate-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:250;align-items:center;justify-content:center;padding:24px;}
+.gate-card{
+  background:var(--dark);border:2px solid var(--red);border-radius:20px;
+  max-width:400px;width:100%;padding:32px 26px 28px;text-align:center;
+  animation:revealSlide .5s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden;
+}
+.gate-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),var(--gold),var(--red));}
+.gate-icon{font-size:40px;line-height:1;margin-bottom:10px;display:block;}
+.gate-eyebrow{font-family:'Bebas Neue',sans-serif;font-size:clamp(24px,6vw,30px);letter-spacing:2.5px;color:var(--white);line-height:1.1;margin-bottom:12px;}
+.gate-body{font-size:16px;color:var(--gray);line-height:1.65;margin-bottom:18px;}
+.gate-body strong{color:var(--white);}
+.gate-btn{
+  display:block;width:100%;background:var(--red);color:var(--white);text-decoration:none;
+  text-align:center;padding:15px 20px;font-family:'Bebas Neue',sans-serif;font-size:19px;
+  letter-spacing:2px;border-radius:8px;border:none;cursor:pointer;
+  transition:all .2s;box-shadow:0 4px 20px var(--red-glow);
+}
+.gate-btn:hover{background:var(--red-dark);transform:translateY(-2px);}
+
+/* ── MOBILE ── */
+@media (max-width:400px){
+  .header h1{font-size:30px;}
+  .wheel-wrapper{width:min(300px,80vw);height:min(300px,80vw);}
+  .win-price{font-size:52px;}
+  .win-headline{font-size:24px;}
+  .win-card{padding:24px 18px 22px;}
+  .cta-btn{font-size:19px;padding:14px 18px;}
+}
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="bg-grid"></div>
+<div class="confetti-bg" id="confettiBg"></div>
+
+<div class="logo-fixed">
+  <img src="finish-strong-logo-white.png" alt="Mike Ferry's Finish Strong Superstar Retreat">
+</div>
+
+<div class="page">
+
+  <div class="header">
+    <div class="badge">Spin &amp; Save · This Weekend Only</div>
+    <h1>SPIN THE WHEEL. <span class="accent">SAVE ON YOUR TICKET.</span></h1>
+    <p class="subtitle">One spin. One shot at a one-time ticket offer.</p>
+    <div class="event-line">Ft. Lauderdale, FL · Bonus Day Sept 14 · Retreat Sept 15&ndash;18</div>
+  </div>
+
+  <!-- ════════ WHEEL ════════ -->
+  <div class="wheel-section gate-locked" id="wheelSection">
+    <div class="pointer"></div>
+    <div class="wheel-wrapper">
+      <canvas id="wheelCanvas"></canvas>
+      <div class="hub"><div class="hub-inner"></div></div>
+    </div>
+    <button class="spin-btn" id="spinBtn" onclick="spinWheel()">SPIN NOW</button>
+    <div class="spin-instruction"><span class="hot">Tap</span> Spin Now to reveal your ticket price</div>
+  </div>
+  <!-- ════════ END WHEEL ════════ -->
+
+  <div class="footer">
+    <div class="footer-text">© 2026 Mike Ferry Organization</div>
+  </div>
+
+</div>
+
+<!-- ════════ WIN OVERLAY ════════ -->
+<div class="win-overlay" id="winOverlay">
+  <div class="win-card" id="winCard">
+    <img class="win-logo" src="finish-strong-logo-white.png" alt="Mike Ferry's Finish Strong Superstar Retreat">
+    <div class="win-label">🎉 YOU LANDED ON</div>
+    <div class="win-headline">FINISH STRONG<br>SUPERSTAR TICKETS</div>
+    <div class="win-price">$275</div>
+    <div class="win-original"><s>$500</s> regular price</div>
+    <div class="win-urgency">
+      <span class="pulse-dot"></span>
+      <span class="urgency-text">This offer expires when you leave this page</span>
+    </div>
+    <p class="win-sub">
+      This is a one-time offer for Mike Ferry's Finish Strong Superstar Retreat. Lock in your $275 ticket before this one-time offer disappears.
+    </p>
+    <a href="https://bit.ly/275-ecfsssr-promo" class="cta-btn" target="_blank" rel="noopener">
+      Claim My $275 Ticket Now →
+    </a>
+    <div class="win-details">
+      <div class="win-details-line"><strong>Mike Ferry's Finish Strong Superstar Retreat</strong></div>
+      <div class="win-details-line">Ft. Lauderdale, FL · Bonus Day Sept 14 · Retreat Sept 15&ndash;18</div>
+      <div class="win-details-line">Valid on new ticket purchases only. Offer valid this weekend only.</div>
+    </div>
+  </div>
+</div>
+<!-- ════════ END WIN OVERLAY ════════ -->
+
+
+<!-- ════════ INACTIVE OVERLAY ════════ -->
+<div class="inactive-overlay" id="inactiveOverlay">
+  <div class="inactive-card">
+    <span class="inactive-icon">🔒</span>
+    <div class="inactive-eyebrow" id="inactiveEyebrow">Thank You For<br><span class="accent">Your Interest!</span></div>
+    <div class="inactive-rule"></div>
+    <div class="inactive-body" id="inactiveBody">This offer isn't active right now.</div>
+    <div class="inactive-sub">Or grab your ticket to Mike Ferry's East Coast Finish Strong Superstar Retreat below.</div>
+    <a class="shop-link" href="https://bit.ly/ec-FSSSR" target="_blank" rel="noopener">Get Early Bird Tickets →</a>
+    <div class="inactive-note">The Mike Ferry Organization · mikeferry.com</div>
+  </div>
+</div>
+
+
+<!-- ════════ ELIGIBILITY GATE ════════ -->
+<div class="gate-overlay" id="gateOverlay">
+  <div class="gate-card">
+    <span class="gate-icon">🎟️</span>
+    <div class="gate-eyebrow">Before You Spin...</div>
+    <div class="gate-body">
+      This offer is valid for <strong>new ticket purchases only</strong>.
+    </div>
+    <button class="gate-btn" id="gateBtn">I Agree — Let's Spin →</button>
+  </div>
+</div>
+
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  BACKGROUND CONFETTI (ambient)
+// ═══════════════════════════════════════════════════════
+(function(){
+  const c = document.getElementById('confettiBg');
+  const colors = ['#C8102E','#FFFFFF','#C79D4A','#FF6B6B'];
+  for (let i = 0; i < 25; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = Math.random()*100 + '%';
+    p.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
+    p.style.borderRadius = Math.random()>0.5 ? '50%' : '2px';
+    const s = 5 + Math.random()*7;
+    p.style.width = s + 'px';
+    p.style.height = (Math.random()>0.5 ? s : s*2) + 'px';
+    p.style.animationDuration = (10+Math.random()*15) + 's';
+    p.style.animationDelay = -(Math.random()*20) + 's';
+    c.appendChild(p);
+  }
+})();
+
+// ═══════════════════════════════════════════════════════
+//  WHEEL SLICES
+//  isWinner:true → wheel ALWAYS lands here ($275 TICKET)
+//  Non-winner slices are decoy ticket prices ($300/$350/$400)
+//  to make the wheel look like a real multi-outcome spin.
+// ═══════════════════════════════════════════════════════
+const SLICES = [
+  { label: '$275\nTICKET', color: '#C8102E', textColor: '#ffffff', isWinner: true  },
+  { label: '$300\nTICKET', color: '#1A1A1A', textColor: '#ffffff', isWinner: false },
+  { label: '$275\nTICKET', color: '#C8102E', textColor: '#ffffff', isWinner: true  },
+  { label: '$350\nTICKET', color: '#1A1A1A', textColor: '#ffffff', isWinner: false },
+  { label: '$275\nTICKET', color: '#C8102E', textColor: '#ffffff', isWinner: true  },
+  { label: '$400\nTICKET', color: '#1A1A1A', textColor: '#ffffff', isWinner: false },
+  { label: '$275\nTICKET', color: '#C8102E', textColor: '#ffffff', isWinner: true  },
+  { label: '$300\nTICKET', color: '#1A1A1A', textColor: '#ffffff', isWinner: false },
+];
+
+const WINNER_INDICES = SLICES.reduce((a, s, i) => { if (s.isWinner) a.push(i); return a; }, []);
+const NUM = SLICES.length;
+const ARC = (2 * Math.PI) / NUM;
+
+const canvas = document.getElementById('wheelCanvas');
+const ctx    = canvas.getContext('2d');
+let SIZE, CX, CY, R, currentAngle = 0, spinning = false;
+
+function setupCanvas() {
+  SIZE = canvas.parentElement.offsetWidth;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width  = SIZE * dpr;
+  canvas.height = SIZE * dpr;
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.scale(dpr, dpr);
+  CX = SIZE / 2; CY = SIZE / 2; R = SIZE / 2 - 6;
+}
+
+function drawWheel(angle) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = 0; i < NUM; i++) {
+    const start = angle + i * ARC;
+    const end   = start + ARC;
+    const s     = SLICES[i];
+
+    ctx.beginPath();
+    ctx.moveTo(CX, CY);
+    ctx.arc(CX, CY, R, start, end);
+    ctx.closePath();
+    ctx.fillStyle = s.color;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(CX, CY);
+    ctx.arc(CX, CY, R, start, end);
+    ctx.closePath();
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.save();
+    ctx.translate(CX, CY);
+    ctx.rotate(start + ARC / 2);
+
+    const lines = s.label.split('\n');
+    const textR = R * 0.66;
+    const bigSz = Math.round(R * 0.135);
+    const smSz  = Math.round(R * 0.11);
+
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+
+    ctx.font      = `700 ${bigSz}px 'Bebas Neue', sans-serif`;
+    ctx.fillStyle = s.textColor;
+    ctx.fillText(lines[0], textR, -(bigSz * 0.5));
+
+    ctx.font      = `500 ${smSz}px 'Bebas Neue', sans-serif`;
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.fillText(lines[1] || '', textR, bigSz * 0.6);
+
+    ctx.restore();
+  }
+
+  ctx.beginPath();
+  ctx.arc(CX, CY, R, 0, 2 * Math.PI);
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 5;
+  ctx.stroke();
+
+  const vign = ctx.createRadialGradient(CX, CY, R * 0.5, CX, CY, R);
+  vign.addColorStop(0, 'rgba(0,0,0,0)');
+  vign.addColorStop(1, 'rgba(0,0,0,0.3)');
+  ctx.beginPath();
+  ctx.arc(CX, CY, R, 0, 2 * Math.PI);
+  ctx.fillStyle = vign;
+  ctx.fill();
+}
+
+document.fonts.ready.then(() => {
+  setupCanvas();
+  drawWheel(0);
+});
+
+function spinWheel() {
+  if (spinning) return;
+  spinning = true;
+  document.getElementById('spinBtn').disabled = true;
+
+  const winIndex     = WINNER_INDICES[Math.floor(Math.random() * WINNER_INDICES.length)];
+  const pointerAngle = -Math.PI / 2;
+  const rawTarget    = pointerAngle - (winIndex * ARC + ARC / 2);
+  const normCurrent  = ((currentAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+
+  let normTarget = ((rawTarget % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+  if (normTarget <= normCurrent) normTarget += 2 * Math.PI;
+
+  const fullSpins     = 7;
+  const totalRotation = fullSpins * 2 * Math.PI + (normTarget - normCurrent);
+  const finalAngle    = normCurrent + totalRotation;
+  const duration      = 5400;
+  const startTime     = performance.now();
+
+  function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
+
+  (function tick(now) {
+    const t = Math.min((now - startTime) / duration, 1);
+    currentAngle = normCurrent + totalRotation * easeOut(t);
+    drawWheel(currentAngle);
+    if (t < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      currentAngle = finalAngle;
+      spinning = false;
+      setTimeout(showWin, 450);
+    }
+  })(performance.now());
+}
+
+function showWin() {
+  document.getElementById('winOverlay').style.display = 'flex';
+  setTimeout(launchCardConfetti, 120);
+  setTimeout(launchConfetti, 300);
+}
+
+function launchCardConfetti() {
+  const card   = document.getElementById('winCard');
+  const colors = ['#C8102E','#ff4444','#C79D4A','#ffffff'];
+  const shapes = ['50%','2px','0'];
+  for (let i = 0; i < 55; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'card-confetti';
+      const sz     = 5 + Math.random() * 9;
+      const startX = 20 + Math.random() * 60;
+      const vx     = (Math.random() - 0.5) * 180;
+      const vy     = -(80 + Math.random() * 140);
+      const rot    = Math.random() * 720 - 360;
+      const dur    = 0.7 + Math.random() * 0.6;
+      el.style.cssText = `
+        left:${startX}%;top:0px;
+        width:${sz}px;height:${sz}px;
+        background:${colors[~~(Math.random()*colors.length)]};
+        border-radius:${shapes[~~(Math.random()*shapes.length)]};
+        animation:cardBurst ${dur}s cubic-bezier(.2,.8,.4,1) forwards;
+        --vx:${vx}px;--vy:${vy}px;--rot:${rot}deg;
+      `;
+      card.appendChild(el);
+      setTimeout(() => el.remove(), dur * 1000 + 200);
+    }, i * 18);
+  }
+}
+
+function launchConfetti() {
+  const colors = ['#C8102E','#ff4444','#C79D4A','#fff'];
+  for (let i = 0; i < 90; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece-full';
+      const sz = 6 + Math.random() * 8;
+      el.style.cssText = `left:${Math.random()*100}vw;top:-12px;width:${sz}px;height:${sz}px;background:${colors[~~(Math.random()*colors.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation:fall ${1.8+Math.random()*2}s ease-in forwards;`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4500);
+    }, i * 28);
+  }
+}
+
+const styleTag = document.createElement('style');
+styleTag.textContent = `
+@keyframes fall{0%{opacity:1;transform:translateY(0) rotate(0deg)}100%{opacity:0;transform:translateY(105vh) rotate(720deg)}}
+@keyframes cardBurst{
+  0%  {opacity:1;transform:translate(0,0) rotate(0deg);}
+  100%{opacity:0;transform:translate(var(--vx),var(--vy)) rotate(var(--rot));}
+}`;
+document.head.appendChild(styleTag);
+
+window.addEventListener('resize', () => { setupCanvas(); drawWheel(currentAngle); });
+
+// ═══════════════════════════════════════════════════════
+//  ELIGIBILITY GATE — must agree before the wheel unlocks
+// ═══════════════════════════════════════════════════════
+let gateAgreed = false;
+
+function showGate() {
+  document.getElementById('gateOverlay').style.display = 'flex';
+}
+
+document.getElementById('gateBtn').addEventListener('click', function () {
+  gateAgreed = true;
+  document.getElementById('gateOverlay').style.display = 'none';
+  document.getElementById('wheelSection').classList.remove('gate-locked');
+});
+
+const originalSpin = spinWheel;
+spinWheel = function() {
+  if (!gateAgreed) return;
+  originalSpin();
+};
+
+// ═══════════════════════════════════════════════════════
+//  PREVIEW MODE
+//  ⚠️ Nate is reviewing this before it goes live — while this is
+//  true, the Fri–Mon lock is bypassed and the page always shows as
+//  active (the eligibility gate still shows). Set this to false once
+//  Nate confirms everything looks right, to re-arm the real lock window.
+// ═══════════════════════════════════════════════════════
+const PREVIEW_MODE = true;
+
+// ═══════════════════════════════════════════════════════
+//  ACTIVE WINDOW
+//  Fri Jul 17 2026, 4:45 PM Pacific  →  Mon Jul 20 2026, 8:00 AM Pacific
+//  NOTE: Pacific is on Daylight Time (PDT, UTC-7) in July, not Standard
+//  Time (PST, UTC-8) — using PDT so the window lands on the actual
+//  clock times requested.
+// ═══════════════════════════════════════════════════════
+const START    = new Date('2026-07-17T23:45:00Z'); // Friday 4:45 PM PDT
+const DEADLINE = new Date('2026-07-20T15:00:00Z'); // Monday 8:00 AM PDT
+
+function showInactive(mode) {
+  document.querySelector('.page').style.display = 'none';
+  const overlay = document.getElementById('inactiveOverlay');
+  const eyebrow = document.getElementById('inactiveEyebrow');
+  const body = document.getElementById('inactiveBody');
+
+  if (mode === 'before') {
+    eyebrow.innerHTML = 'Not Quite<br><span class="accent">Time Yet!</span>';
+    body.textContent = "This offer is currently locked. Check back soon!";
+  } else {
+    eyebrow.innerHTML = 'Thank You For<br><span class="accent">Your Interest!</span>';
+    body.textContent = "This offer has ended.";
+  }
+  overlay.style.display = 'flex';
+}
+
+function showActive() {
+  document.getElementById('inactiveOverlay').style.display = 'none';
+  document.querySelector('.page').style.display = 'flex';
+  showGate();
+  if (!PREVIEW_MODE) {
+    const msLeft = DEADLINE - new Date();
+    if (msLeft > 0) setTimeout(() => showInactive('after'), msLeft);
+  }
+}
+
+(function checkActiveWindow() {
+  if (PREVIEW_MODE) { showActive(); return; }
+  const now = new Date();
+  if (now < START) {
+    showInactive('before');
+    setTimeout(showActive, START - now);
+  } else if (now >= DEADLINE) {
+    showInactive('after');
+  } else {
+    showActive();
+  }
+})();
+</script>
+</body>
+</html>
