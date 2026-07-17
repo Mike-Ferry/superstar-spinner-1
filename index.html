@@ -351,19 +351,20 @@ canvas#wheelCanvas{
 
 // ═══════════════════════════════════════════════════════
 //  WHEEL SLICES
-//  isWinner:true → wheel ALWAYS lands here ($275 TICKET)
-//  Non-winner slices are decoy ticket prices ($300/$350/$400)
-//  to make the wheel look like a real multi-outcome spin.
+//  Only ONE slice is the winner ($275 TICKET) — the wheel
+//  ALWAYS lands there so it reads as a special, rare result,
+//  not a "you win no matter what" wheel. Every other slice is
+//  a decoy ticket price between $300 and $400.
 // ═══════════════════════════════════════════════════════
 const SLICES = [
   { label: '$275\nTICKET', color: '#C8102E', textColor: '#ffffff', isWinner: true  },
   { label: '$300\nTICKET', color: '#1A1A1A', textColor: '#ffffff', isWinner: false },
-  { label: '$275\nTICKET', color: '#C8102E', textColor: '#ffffff', isWinner: true  },
+  { label: '$325\nTICKET', color: '#C8102E', textColor: '#ffffff', isWinner: false },
   { label: '$350\nTICKET', color: '#1A1A1A', textColor: '#ffffff', isWinner: false },
-  { label: '$275\nTICKET', color: '#C8102E', textColor: '#ffffff', isWinner: true  },
+  { label: '$375\nTICKET', color: '#C8102E', textColor: '#ffffff', isWinner: false },
   { label: '$400\nTICKET', color: '#1A1A1A', textColor: '#ffffff', isWinner: false },
-  { label: '$275\nTICKET', color: '#C8102E', textColor: '#ffffff', isWinner: true  },
-  { label: '$300\nTICKET', color: '#1A1A1A', textColor: '#ffffff', isWinner: false },
+  { label: '$340\nTICKET', color: '#C8102E', textColor: '#ffffff', isWinner: false },
+  { label: '$360\nTICKET', color: '#1A1A1A', textColor: '#ffffff', isWinner: false },
 ];
 
 const WINNER_INDICES = SLICES.reduce((a, s, i) => { if (s.isWinner) a.push(i); return a; }, []);
@@ -572,7 +573,7 @@ spinWheel = function() {
 //  active (the eligibility gate still shows). Set this to false once
 //  Nate confirms everything looks right, to re-arm the real lock window.
 // ═══════════════════════════════════════════════════════
-const PREVIEW_MODE = true;
+const PREVIEW_MODE = false;
 
 // ═══════════════════════════════════════════════════════
 //  ACTIVE WINDOW
